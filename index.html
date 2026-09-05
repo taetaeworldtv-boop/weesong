@@ -129,6 +129,15 @@
   .legend{display:flex; gap:16px; flex-wrap:wrap; font-size:12px; color:var(--muted); margin-top:10px}
   .legend i{display:inline-block; width:12px; height:12px; border-radius:3px; margin-right:5px; vertical-align:-1px}
 
+  /* 쉬운 설명 탭 */
+  .ezgrid{display:flex; flex-direction:column; gap:12px}
+  .ezcard{display:grid; grid-template-columns:44px 1fr; gap:14px; background:var(--bg2); border:1px solid var(--line2); border-radius:12px; padding:15px 17px}
+  .ezno{width:34px; height:34px; border-radius:50%; background:color-mix(in srgb,var(--cyan) 16%,transparent); border:1px solid var(--cyan-dim); color:var(--cyan); font-family:var(--mono); font-weight:700; font-size:16px; display:flex; align-items:center; justify-content:center}
+  .ezt{font-size:14.5px; font-weight:650; margin-bottom:5px}
+  .ezcard p{margin:0; font-size:13.5px; line-height:1.75; color:var(--ink)}
+  .ezcard b{color:var(--amber); font-weight:650}
+  .ezref{display:block; margin-top:6px; font-size:12.5px; color:var(--cyan)}
+
   footer{margin-top:26px; color:var(--faint); font-size:12px; line-height:1.7}
   footer code{font-family:var(--mono); color:var(--muted)}
 
@@ -224,7 +233,8 @@
 
     <section class="viewport">
       <div class="tabs" role="tablist">
-        <button role="tab" aria-selected="true"  data-tab="orbit">궤도 &amp; 위치</button>
+        <button role="tab" aria-selected="true"  data-tab="intro">📖 쉬운 설명</button>
+        <button role="tab" aria-selected="false" data-tab="orbit">궤도 &amp; 위치</button>
         <button role="tab" aria-selected="false" data-tab="battery">배터리·연료</button>
         <button role="tab" aria-selected="false" data-tab="path">경로 최적화</button>
         <button role="tab" aria-selected="false" data-tab="dock">자율 도킹</button>
@@ -232,7 +242,58 @@
         <button role="tab" aria-selected="false" data-tab="life">수명·쓰레기</button>
       </div>
 
-      <div class="panel" id="tab-orbit">
+      <!-- TAB: intro (발표용 쉬운 설명) -->
+      <div class="panel" id="tab-intro">
+        <h2>이 프로그램은 무엇을 하나요?</h2>
+        <p class="sub" style="font-size:14px">우주에서 <b style="color:var(--cyan)">연료가 떨어져 가는 인공위성</b>에게 <b style="color:var(--cyan)">로봇 주유소</b>를 보내 연료를 채워주는 임무 전체를 컴퓨터로 미리 실험해 보는 시뮬레이터입니다. 아래 순서대로 읽으면 배경지식 없이도 전체 흐름을 이해할 수 있습니다.</p>
+
+        <div class="ezgrid">
+          <div class="ezcard"><div class="ezno">1</div><div>
+            <div class="ezt">위성은 왜 연료가 필요할까?</div>
+            <p>위성은 가만히 떠 있는 게 아니라 <b>초속 7.7 km</b>로 지구를 돌고 있습니다. 그런데 400 km 상공에도 아주 옅은 공기가 있어 위성을 계속 느리게 만들고, 그대로 두면 <b>점점 떨어져 불타 없어집니다</b>. 그래서 위성은 주기적으로 엔진을 켜 고도를 유지하는데, 이때 연료를 씁니다. <span class="ezref">→ [궤도 &amp; 위치] 탭에서 위성이 도는 모습을, [배터리·연료] 탭에서 연료가 줄어드는 속도를 볼 수 있습니다.</span></p>
+          </div></div>
+
+          <div class="ezcard"><div class="ezno">2</div><div>
+            <div class="ezt">연료가 떨어지면? — 로봇 주유소를 보낸다</div>
+            <p>지금까지는 연료가 떨어진 위성은 <b>수백억 원짜리를 그냥 버려야</b> 했습니다. 이 연구의 아이디어는 <b>재급유 로봇</b>을 보내 위성에 연료를 채워 수명을 늘리는 것입니다. 로봇이 위성까지 갈 때도 연료가 들기 때문에, <b>가장 연료를 아끼는 길</b>을 찾아야 합니다. <span class="ezref">→ [경로 최적화] 탭에서 4가지 이동 전략의 연료 소모를 비교합니다.</span></p>
+          </div></div>
+
+          <div class="ezcard"><div class="ezno">3</div><div>
+            <div class="ezt">가장 어려운 순간 — 도킹 (핵심!)</div>
+            <p>로봇이 위성에 <b>연결(도킹)</b>하는 순간이 가장 위험합니다. 둘 다 초속 7.7 km로 날고 있어서, 중요한 것은 절대 속도가 아니라 <b>두 물체의 속도 차이(상대속도)</b>입니다. 고속도로에서 두 차가 나란히 같은 속도로 달리면 창문으로 물건을 건넬 수 있는 것과 같은 원리입니다. 상대속도를 <b>초속 10 cm 이하(사람 걸음의 1/10)</b>까지 줄이고, 위치와 자세(각도)까지 맞춰야 성공합니다. 조금이라도 빠르면 <b>충돌</b>입니다. <span class="ezref">→ [자율 도킹] 탭에서 속도 화살표가 줄어들며 색이 빨강→초록으로 변하는 과정, 그리고 성공/실패 비교를 직접 볼 수 있습니다. 화면을 마우스로 드래그하면 3D로 돌려볼 수 있습니다.</span></p>
+          </div></div>
+
+          <div class="ezcard"><div class="ezno">4</div><div>
+            <div class="ezt">언제 보내야 할까? — AI가 결정</div>
+            <p>재급유를 <b>너무 일찍</b> 가면 채울 연료가 얼마 안 되어 낭비이고, <b>너무 늦게</b> 가면 로봇이 도착하기 전에 위성 연료가 바닥나 위험합니다. AI가 잔여 연료·이동 시간·안전 여유를 종합해 <b>가장 좋은 출발 시점</b>을 계산합니다. <span class="ezref">→ [AI 재급유] 탭의 그래프에서 초록 선이 AI가 고른 최적 시점입니다.</span></p>
+          </div></div>
+
+          <div class="ezcard"><div class="ezno">5</div><div>
+            <div class="ezt">그래서 얻는 것 — 수명 연장 + 깨끗한 우주</div>
+            <p>재급유를 하면 위성 수명이 <b>수년 이상 연장</b>됩니다. 더 중요한 건 우주 환경입니다. 버려진 위성은 <b>우주쓰레기</b>가 되어 다른 위성과 충돌하고, 충돌 파편이 또 충돌을 일으키는 연쇄(케슬러 신드롬)를 만들 수 있습니다. 재급유는 위성을 오래 쓰게 하고, 마지막에 <b>안전하게 처분할 연료</b>까지 남겨 쓰레기를 크게 줄입니다. <span class="ezref">→ [수명·쓰레기] 탭에서 서비스 유무에 따른 차이를 숫자로 비교합니다.</span></p>
+          </div></div>
+
+          <div class="ezcard"><div class="ezno">★</div><div>
+            <div class="ezt">발표 데모 순서 (추천)</div>
+            <p>① [자율 도킹] 탭에서 <b>▶ 재생</b> — 성공과 실패가 동시에 재생됩니다. 화면을 드래그해 3D로 보여주세요.<br>
+            ② 왼쪽 콘솔에서 <b>위험값(실패)</b> 칩 클릭 → 접근 속도가 빠르면 충돌하는 것을 보여주고, <b>권장값(성공)</b>으로 되돌립니다.<br>
+            ③ [수명·쓰레기] 탭 — "그래서 이 기술이 왜 중요한가"로 마무리.<br>
+            ④ 질문이 나오면 [궤도], [경로], [AI 재급유] 탭으로 원리를 보여주면 됩니다.</p>
+          </div></div>
+        </div>
+
+        <table class="tel" style="margin-top:16px">
+          <tr><td>이 화면에서 쓰는 말</td><td style="text-align:left; font-family:var(--sans)">뜻</td></tr>
+          <tr><td>상대속도</td><td style="text-align:left; font-family:var(--sans)">두 물체의 속도 차이. 도킹은 이걸 0으로 만드는 게 핵심</td></tr>
+          <tr><td>Δv (델타브이)</td><td style="text-align:left; font-family:var(--sans)">속도를 바꾸는 데 필요한 양. 클수록 연료가 많이 듦</td></tr>
+          <tr><td>도킹 포트</td><td style="text-align:left; font-family:var(--sans)">위성에 있는 연결 구멍 (초록 원)</td></tr>
+          <tr><td>접근 회랑</td><td style="text-align:left; font-family:var(--sans)">로봇이 지나가야 하는 안전한 깔때기 모양 통로 (초록 그물)</td></tr>
+          <tr><td>EOL / 수명</td><td style="text-align:left; font-family:var(--sans)">연료·배터리가 다해 위성을 더 못 쓰게 되는 시점</td></tr>
+          <tr><td>케슬러 신드롬</td><td style="text-align:left; font-family:var(--sans)">쓰레기 충돌이 또 쓰레기를 만드는 연쇄 폭발적 증가</td></tr>
+        </table>
+      </div>
+
+      <div class="panel" id="tab-orbit" hidden>
         <h2>위성 위치 예측</h2>
         <p class="sub">고전 궤도요소로부터 케플러 전파 → 3D 관성궤도와 지구 자전을 반영한 지상궤적을 실시간 계산합니다.</p>
         <div class="canvas-grid">
@@ -266,14 +327,23 @@
       </div>
 
       <div class="panel" id="tab-dock" hidden>
-        <h2>정밀 자율 도킹 시뮬레이션</h2>
-        <p class="sub">서비스 로봇이 표적 위성의 도킹 포트로 접근·정렬·접촉하는 과정을 실시간 물리 시뮬레이션합니다. 콘솔의 <b>자율 도킹</b> 값을 바꾸면 궤적과 결과가 달라집니다. 접촉속도·측면오차·자세·연료 조건을 모두 만족해야 <b>연성 도킹 성공</b>입니다.</p>
+        <h2>정밀 자율 도킹 시뮬레이션 (3D)</h2>
+        <p class="sub">서비스 로봇이 표적 위성의 도킹 포트로 <b>3차원 공간</b>에서 접근하는 과정을 실시간 물리 시뮬레이션합니다. 도킹의 핵심인 <b style="color:var(--cyan)">상대속도를 0으로 맞추는 과정</b>을 속도 벡터(색이 붉음→초록으로, 길이가 0으로 수축)와 우하단 그래프로 시각화하고, 3차원 위치(측면 y·z)와 자세(피치·요) 정렬을 함께 제어합니다. 상대속도·측면·자세·연료 조건을 모두 만족해야 <b>연성 도킹 성공</b>입니다.</p>
         <div class="btnrow">
           <button class="btn primary" id="dock-play">▶ 재생</button>
           <button class="btn" id="dock-reset">↺ 리셋</button>
+          <button class="btn" id="view-reset">🎥 시점 복귀</button>
+          <select id="dockGoal" style="width:auto; padding:8px 12px">
+            <option value="refuel">목적: 연료 재급유</option>
+            <option value="battery">목적: 배터리 교체</option>
+            <option value="repair">목적: 부품 수리·유지보수</option>
+            <option value="boost">목적: 궤도 상향 견인</option>
+            <option value="deorbit">목적: 수명종료 폐기 유도</option>
+          </select>
           <span id="dock-mc" style="margin-left:auto; font-size:12.5px; color:var(--muted)"></span>
         </div>
-        <div class="cbox"><div class="cap"><span>사용자 시나리오 (콘솔 값 반영)</span><span id="dock-status"></span></div><canvas id="c-dock"></canvas></div>
+        <div class="cbox"><div class="cap"><span>사용자 시나리오 (콘솔 값 반영) · 🖱 드래그 회전 · 휠 확대/축소 · 더블클릭 복귀</span><span id="dock-status"></span></div><canvas id="c-dock"></canvas></div>
+        <div class="cbox" style="margin-top:14px"><div class="cap"><span>근접 3인칭 — 로봇 추적 카메라 (체이스 캠)</span><span style="color:var(--cyan)">LIVE</span></div><canvas id="c-fpv"></canvas></div>
         <div class="readout" id="dock-read"></div>
         <h4>성공 ↔ 실패 비교 (동시 재생)</h4>
         <div class="dual">
@@ -427,27 +497,57 @@ function computeDebris(life){
 /* ═══ 도킹 시뮬레이션 엔진 ═══ */
 const A_MAX=0.05,KPX=1.2,KPY=0.8,KDY=2.0,KTH=0.8,KDTH=1.8,V_CONTACT=0.10,PORT_R=0.5,ALIGN_MAX=8,C_FUEL=0.12,TMAX=300,SLOPE=0.05;
 function makeDock(cfg){
-  const s={cfg,done:false,ok:false,reason:'',thrust:0,metrics:{}};
-  s.reset=function(){this.x=cfg.x0;this.y=cfg.y0;this.vx=-cfg.v0;this.vy=0;this.theta=0;this.omega=0;this.fuel=cfg.fuel0;this.t=0;this.trail=[];this.done=false;this.ok=false;this.reason='';this.thrust=0;};
-  s.finish=function(ok,r){this.done=true;this.ok=ok;this.reason=r;this.x=Math.max(this.x,0);};
-  s.contact=function(){const cs=Math.abs(this.vx),lat=Math.abs(this.y),al=Math.abs(this.theta)/DEG;this.metrics={cs,lat,al,fuel:this.fuel};if(this.fuel<=0.001)this.finish(false,'연료 소진 · 제어 상실');else if(cs>V_CONTACT)this.finish(false,'접촉속도 초과 ('+(cs*100).toFixed(1)+' cm/s) · 충돌');else if(lat>PORT_R)this.finish(false,'포트 이탈 (측면 '+lat.toFixed(2)+' m)');else if(al>ALIGN_MAX)this.finish(false,'자세 정렬 실패 ('+al.toFixed(1)+'°)');else this.finish(true,'연성 도킹 성공');};
+  // 3D 상대운동: 위치(x=접근축,y,z), 속도벡터, 자세(피치 py·요 yw·롤 rl)
+  const s={cfg,done:false,ok:false,reason:'',thrust:0,metrics:{},vrelHist:[]};
+  s.reset=function(){
+    const ang=Math.random()*2*Math.PI;               // 측면 오차의 3D 방향
+    this.x=cfg.x0; this.y=cfg.y0*Math.cos(ang); this.z=cfg.y0*Math.sin(ang);
+    this.vx=-cfg.v0; this.vy=0; this.vz=0;
+    const a0=(cfg.y0*0.7+1.5)*DEG;                    // 초기 자세오차
+    this.py=a0*(Math.random()<0.5?1:-1); this.yw=a0*(Math.random()<0.5?1:-1); this.rl=0;
+    this.wy=0; this.wz=0; this.wr=0;
+    this.fuel=cfg.fuel0; this.t=0; this.trail=[]; this.vrelHist=[];
+    this.done=false; this.ok=false; this.reason=''; this.thrust=0;
+  };
+  s.finish=function(ok,r){this.done=true;this.ok=ok;this.reason=r;this.x=Math.max(this.x,0);this.tDone=performance.now();};
+  s.contact=function(){
+    const vrel=Math.sqrt(this.vx*this.vx+this.vy*this.vy+this.vz*this.vz);
+    const lat=Math.sqrt(this.y*this.y+this.z*this.z);
+    const att=Math.sqrt(this.py*this.py+this.yw*this.yw)/DEG;
+    this.metrics={vrel,lat,att,fuel:this.fuel};
+    if(this.fuel<=0.001)this.finish(false,'연료 소진 · 제어 상실');
+    else if(vrel>V_CONTACT)this.finish(false,'상대속도 초과 ('+(vrel*100).toFixed(1)+' cm/s) · 충돌');
+    else if(lat>PORT_R)this.finish(false,'포트 이탈 (측면 '+lat.toFixed(2)+' m)');
+    else if(att>ALIGN_MAX)this.finish(false,'자세 정렬 실패 ('+att.toFixed(1)+'°)');
+    else this.finish(true,'어댑터 링 캡처 성공 · 상대속도 '+(vrel*100).toFixed(1)+' cm/s');
+  };
   s.step=function(dt){
-    if(this.done)return;this.t+=dt;const c=this.cfg;
-    const ym=this.y+c.noise*gauss(),vym=this.vy+c.noise*0.3*gauss(),xm=Math.max(this.x+c.noise*0.5*gauss(),0.001),vxm=this.vx+c.noise*0.2*gauss();
+    if(this.done)return;this.t+=dt;const c=this.cfg,n=c.noise;
+    // 잡음 섞인 측정값
+    const xm=Math.max(this.x+n*0.5*gauss(),0.001),ym=this.y+n*gauss(),zm=this.z+n*gauss();
+    const vxm=this.vx+n*0.2*gauss(),vym=this.vy+n*0.3*gauss(),vzm=this.vz+n*0.3*gauss();
+    // 접근축 글라이드슬로프(거리에 비례해 접근속도 목표를 줄여 상대속도를 0으로 수렴)
     const vdes=Math.min(c.v0,0.04*xm+0.03);
-    let ax=KPX*c.gain*(-vdes-vxm), ay=c.gain*(-KPY*ym-KDY*vym);
-    const am=Math.hypot(ax,ay); if(am>A_MAX){ax*=A_MAX/am;ay*=A_MAX/am;}
-    let tq=-KTH*c.gain*this.theta-KDTH*c.gain*this.omega;
-    if(this.fuel<=0){ax=0;ay=0;tq=0;}
-    this.thrust=Math.hypot(ax,ay);
-    this.fuel=Math.max(0,this.fuel-C_FUEL*(Math.abs(ax)+Math.abs(ay))*dt);
-    const dA=0.12*c.noise; ax+=dA*gauss(); ay+=dA*gauss(); const dT=0.14*c.noise*gauss();
-    this.vx+=ax*dt;this.vy+=ay*dt;this.x+=this.vx*dt;this.y+=this.vy*dt;this.omega+=(tq+dT)*dt;this.theta+=this.omega*dt;
-    if(Math.floor(this.t/0.32)>this.trail.length) this.trail.push({x:this.x,y:this.y});
+    let ax=KPX*c.gain*(-vdes-vxm), ay=c.gain*(-KPY*ym-KDY*vym), az=c.gain*(-KPY*zm-KDY*vzm);
+    const am=Math.sqrt(ax*ax+ay*ay+az*az); if(am>A_MAX){const k=A_MAX/am;ax*=k;ay*=k;az*=k;}
+    // 자세 PD (피치·요·롤 정렬)
+    let ty=-KTH*c.gain*this.py-KDTH*c.gain*this.wy, tz=-KTH*c.gain*this.yw-KDTH*c.gain*this.wz, tr=-KTH*c.gain*this.rl-KDTH*c.gain*this.wr;
+    if(this.fuel<=0){ax=ay=az=0;ty=tz=tr=0;}
+    this.thrust=Math.sqrt(ax*ax+ay*ay+az*az);
+    this.aCmd={x:ax,y:ay,z:az};                       // 1인칭 뷰 추력 표시용
+    this.fuel=Math.max(0,this.fuel-C_FUEL*((Math.abs(ax)+Math.abs(ay)+Math.abs(az))+0.3*(Math.abs(ty)+Math.abs(tz)+Math.abs(tr)))*dt);
+    const dA=0.12*n, dT=0.14*n; ax+=dA*gauss(); ay+=dA*gauss(); az+=dA*gauss();
+    // 병진 적분
+    this.vx+=ax*dt;this.vy+=ay*dt;this.vz+=az*dt;this.x+=this.vx*dt;this.y+=this.vy*dt;this.z+=this.vz*dt;
+    // 자세 적분
+    this.wy+=(ty+dT*gauss())*dt;this.wz+=(tz+dT*gauss())*dt;this.wr+=(tr+dT*gauss())*dt;
+    this.py+=this.wy*dt;this.yw+=this.wz*dt;this.rl+=this.wr*dt;
+    const vrel=Math.sqrt(this.vx*this.vx+this.vy*this.vy+this.vz*this.vz);
+    if(Math.floor(this.t/0.32)>this.trail.length){this.trail.push({x:this.x,y:this.y,z:this.z});this.vrelHist.push(vrel);}
     if(this.x<=0)this.contact();
     else if(this.t>TMAX)this.finish(false,'시간 초과 · 접근 실패');
     else if(this.x>c.x0*1.7)this.finish(false,'발산 · 접근 실패');
-    else if(Math.abs(this.y)>Math.max(Math.abs(c.y0)*3,15))this.finish(false,'측면 이탈 · 접근 실패');
+    else if(Math.sqrt(this.y*this.y+this.z*this.z)>Math.max(Math.abs(c.y0)*3,15))this.finish(false,'측면 이탈 · 접근 실패');
   };
   s.reset(); return s;
 }
@@ -459,7 +559,10 @@ let userDock=makeDock(dockCfg()), cmpGood=makeDock(GOOD_CFG), cmpBad=makeDock(BA
 function resetDocks(){userDock=makeDock(dockCfg());cmpGood=makeDock(GOOD_CFG);cmpBad=makeDock(BAD_CFG);dockRunning=false;drawDockAll();updateDockStatus();}
 
 /* ═══ 상태 & 재계산 ═══ */
-let state={}, activeTab='orbit';
+let state={}, activeTab='intro';
+// 도킹 3D 카메라 (마우스 드래그 제어)
+let camAz=0.62, camEl=20*DEG, camZoom=1, dragging=false, lastPX=0, lastPY=0, camUser=false;
+const STARS=Array.from({length:150},()=>({x:Math.random(),y:Math.random(),r:Math.random()*1.2+0.3,b:Math.random()*0.6+0.25}));
 const LABELS={alt:v=>(+v).toLocaleString()+' km',ecc:v=>(+v).toFixed(3),inc:v=>(+v).toFixed(1)+'°',raan:v=>(+v).toFixed(0)+'°',prop:v=>v+' kg',dry:v=>v+' kg',isp:v=>v+' s',area:v=>v+' m²',panelArea:v=>v+' m²',busPower:v=>v+' W',battCap:v=>v+' Wh',rfuel:v=>v+' kg',risp:v=>v+' s',dinc:v=>(+v).toFixed(1)+'°',phase:v=>v+'°',ttime:v=>v+' 일',window:v=>v+' 일',dockRange:v=>v+' m',dockOffset:v=>(+v).toFixed(1)+' m',dockSpeed:v=>(+v).toFixed(2)+' m/s',sensorNoise:v=>(+v).toFixed(2),autoGain:v=>(+v).toFixed(2),dockFuel:v=>(+v).toFixed(1)+' kg',fleetN:v=>v+' 기',horizon:v=>v+' 년',refuelCount:v=>v+' 회'};
 function recompute(){
   IDS.forEach(id=>{if(LABELS[id]&&$(id+'-v'))$(id+'-v').textContent=LABELS[id](inputs[id].value);});
@@ -606,36 +709,583 @@ function drawRefuel(){const cv=$('c-refuel');if(!cv.clientWidth)return;const {ct
   ctx.textAlign='right';ctx.fillStyle='#f5a742';ctx.fillText('연료',pad.l+iw-2,pad.t+11);ctx.fillStyle='#38e1c6';ctx.fillText('효용',pad.l+iw-2,pad.t+24);
 }
 
-/* ═══ 도킹 아레나 ═══ */
-function drawArena(cv,sim,big){if(!cv.clientWidth)return;const {ctx,w,h}=fitCanvas(cv,big?0.5:0.62);ctx.clearRect(0,0,w,h);const c=sim.cfg;
-  const padL=52,padR=14,padT=12,padB=22,xView=c.x0*1.08,yView=Math.max(Math.abs(c.y0)*2.6,8);
-  const SX=x=>padL+x/xView*(w-padL-padR),cyc=padT+(h-padT-padB)/2,SY=y=>cyc-y/yView*((h-padT-padB)/2);
-  ctx.fillStyle='#08101d';ctx.fillRect(0,0,w,h);
-  // 접근 회랑
-  ctx.fillStyle='rgba(74,222,128,0.09)';ctx.beginPath();ctx.moveTo(SX(0),SY(PORT_R));for(let x=0;x<=xView;x+=xView/40)ctx.lineTo(SX(x),SY(PORT_R+SLOPE*x));for(let x=xView;x>=0;x-=xView/40)ctx.lineTo(SX(x),SY(-(PORT_R+SLOPE*x)));ctx.closePath();ctx.fill();
-  ctx.strokeStyle='rgba(90,110,150,0.35)';ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(SX(0),SY(0));ctx.lineTo(SX(xView),SY(0));ctx.stroke();ctx.setLineDash([]);
-  // 표적 위성 + 포트
-  const px=SX(0),py=SY(0);ctx.fillStyle='#2a3550';ctx.fillRect(px-34,py-15,26,30);ctx.fillStyle='#1c4e7e';ctx.fillRect(px-46,py-6,12,12);ctx.fillStyle='#3a86c9';ctx.fillRect(px-34,py-26,26,7);ctx.fillRect(px-34,py+19,26,7);
-  ctx.fillStyle='#4ade80';ctx.beginPath();ctx.moveTo(px-8,py-6);ctx.lineTo(px,py);ctx.lineTo(px-8,py+6);ctx.closePath();ctx.fill();
-  // 궤적
-  if(sim.trail.length>1){ctx.strokeStyle='rgba(245,167,66,0.5)';ctx.lineWidth=1.5;ctx.beginPath();sim.trail.forEach((p,i)=>i?ctx.lineTo(SX(Math.max(p.x,0)),SY(p.y)):ctx.moveTo(SX(Math.max(p.x,0)),SY(p.y)));ctx.stroke();}
-  // 로봇
-  const rx=SX(Math.max(sim.x,0)),ry=SY(sim.y);ctx.save();ctx.translate(rx,ry);ctx.rotate(-sim.theta);
-  if(sim.thrust>0.01&&!sim.done&&sim.fuel>0){ctx.fillStyle='rgba(56,225,198,0.85)';ctx.beginPath();ctx.moveTo(9,0);ctx.lineTo(15+Math.random()*5,-2.5);ctx.lineTo(15+Math.random()*5,2.5);ctx.closePath();ctx.fill();}
-  ctx.fillStyle=sim.done?(sim.ok?'#4ade80':'#f2555a'):'#e8edf7';ctx.fillRect(-7,-6,14,12);ctx.fillStyle='#5aa0ff';ctx.fillRect(-11,-4,4,8);ctx.fillRect(7,-4,4,8);
-  ctx.fillStyle='#f5a742';ctx.beginPath();ctx.moveTo(-7,-4);ctx.lineTo(-12,0);ctx.lineTo(-7,4);ctx.closePath();ctx.fill();ctx.restore();
-  // HUD
-  ctx.fillStyle='#8b96ad';ctx.font='11px ui-monospace,monospace';ctx.textAlign='left';
-  const cs=Math.abs(sim.vx);
-  const hud=['거리 '+sim.x.toFixed(1)+' m','접근 '+(cs*100).toFixed(1)+' cm/s','측면 '+sim.y.toFixed(2)+' m','자세 '+(sim.theta/DEG).toFixed(1)+'°','연료 '+sim.fuel.toFixed(2)+' kg'];
-  hud.forEach((t,i)=>ctx.fillText(t,padL+2,padT+12+i*13));
-  // 결과 오버레이
-  if(sim.done){ctx.fillStyle=sim.ok?'rgba(74,222,128,0.14)':'rgba(242,85,90,0.14)';ctx.fillRect(0,0,w,h);ctx.textAlign='center';ctx.fillStyle=sim.ok?'#4ade80':'#f2555a';ctx.font='bold '+(big?22:16)+'px system-ui';ctx.fillText(sim.ok?'도킹 성공':'도킹 실패',w/2,h/2-6);ctx.fillStyle='#e8edf7';ctx.font='12px system-ui';ctx.fillText(sim.reason,w/2,h/2+16);}
+/* ═══ 도킹 아레나 (3D) ═══ */
+function _noseVec(sim){const py=sim.py,yw=sim.yw;return {x:-Math.cos(py)*Math.cos(yw),y:Math.sin(yw),z:Math.sin(py)};}
+function _arrow(ctx,x0,y0,x1,y1,col,lw){ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=lw||2;ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke();const a=Math.atan2(y1-y0,x1-x0),hl=7;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x1-hl*Math.cos(a-0.42),y1-hl*Math.sin(a-0.42));ctx.lineTo(x1-hl*Math.cos(a+0.42),y1-hl*Math.sin(a+0.42));ctx.closePath();ctx.fill();}
+function _box3(ctx,proj,cxw,sx,sy,sz,edge){const c=[];for(let i=0;i<8;i++)c.push(proj(cxw+((i&1)?sx:-sx),((i&2)?sy:-sy),((i&4)?sz:-sz)));const E=[[0,1],[1,3],[3,2],[2,0],[4,5],[5,7],[7,6],[6,4],[0,4],[1,5],[2,6],[3,7]];ctx.strokeStyle=edge;ctx.lineWidth=1.2;ctx.beginPath();E.forEach(e=>{ctx.moveTo(c[e[0]].sx,c[e[0]].sy);ctx.lineTo(c[e[1]].sx,c[e[1]].sy);});ctx.stroke();}
+/* 사진 기반 표적 위성: 금박 MLI 몸체 + 2단 태양전지 날개 + 라디에이터 + 은색 모듈 */
+function _quad(ctx,a,b,c,d,fill,stroke,lw){ctx.beginPath();ctx.moveTo(a.sx,a.sy);ctx.lineTo(b.sx,b.sy);ctx.lineTo(c.sx,c.sy);ctx.lineTo(d.sx,d.sy);ctx.closePath();if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lw||1;ctx.stroke();}}
+function _lerpP(a,b,t){return{sx:a.sx+(b.sx-a.sx)*t,sy:a.sy+(b.sy-a.sy)*t};}
+function _bil(c0,c1,c2,c3,u,v){return _lerpP(_lerpP(c0,c1,u),_lerpP(c3,c2,u),v);}
+/* 아이소메트릭 3D 배터리 팩 (앞면+윗면+옆면, 단자, 충전 셀 표시) */
+const BATT_OLD={front:'#6e4a20',top:'#8a5f2c',side:'#523618',edge:'#2e2410',bar:'#f5a742',term:'#c8cdd8'};
+const BATT_NEW={front:'#2f6b46',top:'#3f8a5b',side:'#234f34',edge:'#122a1c',bar:'#4ade80',term:'#e8edf7'};
+function _batt3d(ctx,x,y,w,h,C,pct){
+  const d=Math.max(Math.min(w,h)*0.30,3);
+  ctx.lineWidth=1;ctx.strokeStyle=C.edge;
+  ctx.fillStyle=C.top;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+d,y-d);ctx.lineTo(x+w+d,y-d);ctx.lineTo(x+w,y);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.fillStyle=C.side;ctx.beginPath();ctx.moveTo(x+w,y);ctx.lineTo(x+w+d,y-d);ctx.lineTo(x+w+d,y+h-d);ctx.lineTo(x+w,y+h);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.fillStyle=C.front;ctx.fillRect(x,y,w,h);ctx.strokeRect(x,y,w,h);
+  ctx.fillStyle=C.term;[0.28,0.68].forEach(t=>ctx.fillRect(x+w*t+d*0.45-2,y-d-3,4,4));   // 단자 2극
+  if(pct!=null){const n=4,on=Math.round(pct/100*n);
+    for(let k=0;k<n;k++){ctx.fillStyle=k<on?C.bar:'rgba(120,130,150,0.28)';
+      ctx.fillRect(x+3+k*((w-6)/n),y+h*0.3,Math.max((w-6)/n-2,2),h*0.42);}}
 }
-function drawDockAll(){drawArena($('c-dock'),userDock,true);drawArena($('c-dock-good'),cmpGood,false);drawArena($('c-dock-bad'),cmpBad,false);updateDockStatus();}
+function _paintBox(ctx,P,bc,hh,cols){
+  const cn=[];for(let i=0;i<8;i++)cn.push(P(bc.x+((i&1)?hh.x:-hh.x),bc.y+((i&2)?hh.y:-hh.y),bc.z+((i&4)?hh.z:-hh.z)));
+  const F=[{ix:[0,2,6,4],c:cols.dk},{ix:[1,3,7,5],c:cols.md},{ix:[0,1,5,4],c:cols.md},{ix:[2,3,7,6],c:cols.md},{ix:[0,1,3,2],c:cols.dk},{ix:[4,5,7,6],c:cols.lt}];
+  F.forEach(f=>f.dep=f.ix.reduce((s,i)=>s+cn[i].dep,0)/4);
+  F.sort((a,b)=>a.dep-b.dep);
+  F.forEach(f=>_quad(ctx,cn[f.ix[0]],cn[f.ix[1]],cn[f.ix[2]],cn[f.ix[3]],f.c,cols.edge,1));
+  return {cn,front:F[F.length-1]};
+}
+const _MLI=[[0.12,0.18,0.34,0.46],[0.5,0.12,0.72,0.4],[0.2,0.66,0.48,0.88],[0.62,0.58,0.9,0.8],[0.34,0.05,0.52,0.3],[0.05,0.45,0.25,0.72]];
+function _drawSatellite(ctx,P){
+  const BC={x:-3.7,y:0,z:0},H={x:1.9,y:1.35,z:1.35};
+  const wing=sgn=>{
+    const b0=P(BC.x,sgn*H.y,0),b1=P(BC.x,sgn*2.15,0);
+    ctx.strokeStyle='#aeb6c4';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(b0.sx,b0.sy);ctx.lineTo(b1.sx,b1.sy);ctx.stroke();
+    for(let s2=0;s2<2;s2++){
+      const y0=sgn*(2.15+s2*3.05),y1=sgn*(2.15+s2*3.05+2.85),x0=BC.x-1.55,x1=BC.x+1.55;
+      const A=P(x0,y0,0),B=P(x1,y0,0),C=P(x1,y1,0),D=P(x0,y1,0);
+      _quad(ctx,A,B,C,D,'#16294a','#4a6b9c',1.2);
+      ctx.strokeStyle='rgba(150,180,220,0.35)';ctx.lineWidth=0.7;
+      for(let k=1;k<6;k++){const t=k/6,p1=_lerpP(A,D,t),p2=_lerpP(B,C,t);ctx.beginPath();ctx.moveTo(p1.sx,p1.sy);ctx.lineTo(p2.sx,p2.sy);ctx.stroke();}
+      const m1=_lerpP(A,B,0.5),m2=_lerpP(D,C,0.5);
+      ctx.strokeStyle='rgba(200,220,240,0.45)';ctx.beginPath();ctx.moveTo(m1.sx,m1.sy);ctx.lineTo(m2.sx,m2.sy);ctx.stroke();
+    }
+  };
+  const wDep=[P(BC.x,-5,0).dep,P(BC.x,5,0).dep];
+  const order=wDep[0]<wDep[1]?[-1,1]:[1,-1];
+  wing(order[0]);                                       // 먼 날개
+  // 금박 몸체
+  const {cn}=_paintBox(ctx,P,BC,H,{lt:'#eecb56',md:'#c99a2d',dk:'#8f6c14',edge:'rgba(70,52,10,0.65)'});
+  // MLI 주름 (앞면 +x: 1,3,7,5)
+  ctx.strokeStyle='rgba(255,240,185,0.3)';ctx.lineWidth=1;
+  _MLI.forEach(m=>{const p1=_bil(cn[1],cn[3],cn[7],cn[5],m[0],m[1]),p2=_bil(cn[1],cn[3],cn[7],cn[5],m[2],m[3]);ctx.beginPath();ctx.moveTo(p1.sx,p1.sy);ctx.lineTo(p2.sx,p2.sy);ctx.stroke();});
+  // 백색 라디에이터 패치 2개 (앞면)
+  const patch=(u0,v0,u1,v1)=>_quad(ctx,_bil(cn[1],cn[3],cn[7],cn[5],u0,v0),_bil(cn[1],cn[3],cn[7],cn[5],u1,v0),_bil(cn[1],cn[3],cn[7],cn[5],u1,v1),_bil(cn[1],cn[3],cn[7],cn[5],u0,v1),'rgba(242,246,252,0.92)','rgba(150,150,150,0.4)',0.8);
+  patch(0.1,0.62,0.32,0.88); patch(0.66,0.68,0.86,0.86);
+  // 계기 렌즈(어두운 원)
+  const lens=_bil(cn[1],cn[3],cn[7],cn[5],0.5,0.3);
+  ctx.fillStyle='#131a28';ctx.beginPath();ctx.arc(lens.sx,lens.sy,4.2,0,2*Math.PI);ctx.fill();
+  ctx.strokeStyle='#4a5568';ctx.lineWidth=1;ctx.stroke();
+  // 은색 모듈 (하단)
+  _paintBox(ctx,P,{x:-2.9,y:0.55,z:-1.75},{x:0.75,y:0.6,z:0.4},{lt:'#dde3ec',md:'#aab3c0',dk:'#828c9b',edge:'rgba(60,66,78,0.6)'});
+  // 안테나 2개
+  ctx.strokeStyle='#c8cdd8';ctx.lineWidth=1.2;
+  [[-3.2,0.4,1.35,-3.6,0.9,2.5],[-4.2,-0.3,1.35,-4.5,-0.7,2.2]].forEach(a=>{const p1=P(a[0],a[1],a[2]),p2=P(a[3],a[4],a[5]);ctx.beginPath();ctx.moveTo(p1.sx,p1.sy);ctx.lineTo(p2.sx,p2.sy);ctx.stroke();ctx.fillStyle='#e8edf7';ctx.beginPath();ctx.arc(p2.sx,p2.sy,1.6,0,2*Math.PI);ctx.fill();});
+  // 도킹 칼라 (몸체 앞면 → 포트 연결 원뿔)
+  ctx.strokeStyle='#d3a637';ctx.lineWidth=1.6;
+  ctx.beginPath();for(let a=0;a<=24;a++){const th=a/24*2*Math.PI,p=P(-1.8,0.85*Math.cos(th),0.85*Math.sin(th));a?ctx.lineTo(p.sx,p.sy):ctx.moveTo(p.sx,p.sy);}ctx.stroke();
+  [[0,1],[Math.PI,1]].forEach(v=>{const th=v[0],p1=P(-1.8,0.85*Math.cos(th),0.85*Math.sin(th)),p2=P(0,PORT_R*Math.cos(th),PORT_R*Math.sin(th));ctx.beginPath();ctx.moveTo(p1.sx,p1.sy);ctx.lineTo(p2.sx,p2.sy);ctx.stroke();});
+  // 엔진(LAE) 노즐 — 링 안쪽의 어두운 원뿔
+  const nzc=P(-0.45,0,0),nze=P(-0.45,0.34,0),nzr=Math.hypot(nze.sx-nzc.sx,nze.sy-nzc.sy);
+  const ng2=ctx.createRadialGradient(nzc.sx-nzr*0.2,nzc.sy-nzr*0.2,nzr*0.1,nzc.sx,nzc.sy,nzr);
+  ng2.addColorStop(0,'#4a515e');ng2.addColorStop(1,'#0c0e13');
+  ctx.fillStyle=ng2;ctx.beginPath();ctx.arc(nzc.sx,nzc.sy,nzr,0,2*Math.PI);ctx.fill();
+  ctx.strokeStyle='#828b99';ctx.lineWidth=1;ctx.stroke();
+  // 발사 어댑터 링 (금속)
+  ctx.strokeStyle='#9aa3b2';ctx.lineWidth=2.4;
+  ctx.beginPath();for(let a=0;a<=30;a++){const th=a/30*2*Math.PI,p=P(0,PORT_R*1.2*Math.cos(th),PORT_R*1.2*Math.sin(th));a?ctx.lineTo(p.sx,p.sy):ctx.moveTo(p.sx,p.sy);}ctx.stroke();
+  // 광학 표적 3개 (흰 점)
+  ctx.fillStyle='#f2f5fa';
+  for(let k=0;k<3;k++){const a0=-Math.PI/2+k*2*Math.PI/3,p=P(-1.75,1.05*Math.cos(a0),1.05*Math.sin(a0));ctx.beginPath();ctx.arc(p.sx,p.sy,2,0,2*Math.PI);ctx.fill();}
+  wing(order[1]);                                       // 가까운 날개
+}
+function _spark(ctx,x,y,w,h,hist,v0){ctx.fillStyle='rgba(8,16,29,0.8)';ctx.fillRect(x,y,w,h);ctx.strokeStyle='rgba(90,110,150,0.3)';ctx.strokeRect(x,y,w,h);ctx.fillStyle='#8b96ad';ctx.font='9px ui-monospace,monospace';ctx.textAlign='left';ctx.fillText('상대속도 → 0',x+4,y+11);if(hist&&hist.length>1){const mx=Math.max(v0,...hist)||1;ctx.strokeStyle='rgba(74,222,128,0.5)';ctx.setLineDash([2,2]);ctx.beginPath();ctx.moveTo(x+4,y+h-5);ctx.lineTo(x+w-4,y+h-5);ctx.stroke();ctx.setLineDash([]);ctx.strokeStyle='#38e1c6';ctx.lineWidth=1.6;ctx.beginPath();hist.forEach((v,i)=>{const px=x+4+(i/(hist.length-1))*(w-8),py=y+h-5-(v/mx)*(h-18);i?ctx.lineTo(px,py):ctx.moveTo(px,py);});ctx.stroke();}}
+function drawArena(cv,sim,big){
+  if(!cv.clientWidth)return;
+  const {ctx,w,h}=fitCanvas(cv,big?0.62:0.72);ctx.clearRect(0,0,w,h);
+  // 임무 후 궤도변화 연출용 진행도 (견인/폐기)
+  const goal=($('dockGoal')||{}).value||'refuel';
+  const elM=(sim.done&&sim.ok)?performance.now()-(sim.tDone||performance.now()):0;
+  const mpA=clamp((elM-1800)/9000,0,1);
+  const boostFx=(big&&sim.done&&sim.ok&&goal==='boost')?mpA:0;
+  const deorbFx=(big&&sim.done&&sim.ok&&goal==='deorbit')?mpA:0;
+  // ── 우주 배경: 별 + 지구 + 태양 + 달 (카메라 회전에 연동) ──
+  const bAz=(camUser?camAz:(0.62+0.30*Math.sin(performance.now()/2600)))-0.62, bEl=camEl-20*DEG;
+  const bg=ctx.createLinearGradient(0,0,0,h);bg.addColorStop(0,'#060913');bg.addColorStop(1,'#0a1322');ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);
+  const wrap=(v,m)=>((v%m)+m)%m;
+  STARS.forEach(s=>{ctx.globalAlpha=s.b;ctx.fillStyle='#dfe8ff';ctx.beginPath();ctx.arc(wrap(s.x*w - bAz*w*0.34,w),wrap(s.y*h + bEl*h*0.30,h),s.r,0,2*Math.PI);ctx.fill();});ctx.globalAlpha=1;
+  // 지구 (아래쪽 지평선처럼 크게) — 견인 시 멀어지고, 폐기 시 다가옴
+  const eR=w*0.85*(1-0.14*boostFx)*(1+0.45*deorbFx),
+        eX=w*0.30 - Math.sin(bAz)*w*0.50,
+        eY=h+eR*0.86 + Math.sin(bEl)*h*0.75 + boostFx*h*0.30 - deorbFx*h*0.42;
+  const eg=ctx.createRadialGradient(eX,eY-eR*0.2,eR*0.3,eX,eY,eR);eg.addColorStop(0,'#2f6ea8');eg.addColorStop(0.75,'#173d63');eg.addColorStop(1,'#0b2038');
+  ctx.beginPath();ctx.arc(eX,eY,eR,0,2*Math.PI);ctx.fillStyle=eg;ctx.fill();
+  const atm=ctx.createRadialGradient(eX,eY,eR*0.97,eX,eY,eR*1.05);atm.addColorStop(0,'rgba(90,170,255,0.35)');atm.addColorStop(1,'rgba(90,170,255,0)');
+  ctx.beginPath();ctx.arc(eX,eY,eR*1.05,0,2*Math.PI);ctx.fillStyle=atm;ctx.fill();
+  // 태양 (우상단)
+  const sX=w*0.88 - Math.sin(bAz)*w*0.85,sY=h*0.10 + Math.sin(bEl)*h*0.6,sR=big?15:10;
+  const sg=ctx.createRadialGradient(sX,sY,1,sX,sY,sR*3.2);sg.addColorStop(0,'#fff7d8');sg.addColorStop(0.25,'rgba(255,222,120,0.85)');sg.addColorStop(1,'rgba(255,200,80,0)');
+  ctx.beginPath();ctx.arc(sX,sY,sR*3.2,0,2*Math.PI);ctx.fillStyle=sg;ctx.fill();
+  ctx.beginPath();ctx.arc(sX,sY,sR,0,2*Math.PI);ctx.fillStyle='#fff3c0';ctx.fill();
+  // 달 (좌상단, 작게)
+  const mX=w*0.12 - Math.sin(bAz)*w*0.65,mY=h*0.14 + Math.sin(bEl)*h*0.5,mR=big?7:5;
+  ctx.beginPath();ctx.arc(mX,mY,mR,0,2*Math.PI);ctx.fillStyle='#c9ccd6';ctx.fill();
+  ctx.beginPath();ctx.arc(mX-mR*0.3,mY-mR*0.2,mR*0.28,0,2*Math.PI);ctx.fillStyle='#a8adbb';ctx.fill();
+  ctx.beginPath();ctx.arc(mX+mR*0.35,mY+mR*0.3,mR*0.2,0,2*Math.PI);ctx.fill();
+  const c=sim.cfg;
+  const xView=c.x0, yView=Math.max(Math.abs(c.y0)*2.0,PORT_R+SLOPE*c.x0+1,4);
+  const halfSpan=Math.max(xView*0.55,yView*1.25);
+  // 카메라: 사용자가 드래그하면 그 각도 고정, 아니면 천천히 자동 선회
+  const el=camEl, az=camUser?camAz:(0.62+0.30*Math.sin(performance.now()/2600));
+  const cx=w/2, cy=h/2+(big?12:8), scale=Math.min(w,h)*0.42/halfSpan*camZoom;
+  const proj=(x,y,z)=>{const X=x-xView*0.5,ca=Math.cos(az),sa=Math.sin(az);let xa=X*ca-y*sa,ya=X*sa+y*ca,za=z;const ce=Math.cos(el),se=Math.sin(el);let zb=ya*se+za*ce;return{sx:cx+xa*scale,sy:cy-zb*scale,dep:ya*ce-za*se};};
+  // 접근 회랑 콘 (링 + 세로선)
+  const rings=6;ctx.strokeStyle='rgba(74,222,128,0.26)';ctx.lineWidth=1;
+  for(let i=0;i<=rings;i++){const x=xView*i/rings,r=PORT_R+SLOPE*x;ctx.beginPath();for(let a=0;a<=36;a++){const th=a/36*2*Math.PI,p=proj(x,r*Math.cos(th),r*Math.sin(th));a?ctx.lineTo(p.sx,p.sy):ctx.moveTo(p.sx,p.sy);}ctx.stroke();}
+  ctx.strokeStyle='rgba(74,222,128,0.13)';
+  for(let a=0;a<8;a++){const th=a/8*2*Math.PI;ctx.beginPath();for(let i=0;i<=rings;i++){const x=xView*i/rings,r=PORT_R+SLOPE*x,p=proj(x,r*Math.cos(th),r*Math.sin(th));i?ctx.lineTo(p.sx,p.sy):ctx.moveTo(p.sx,p.sy);}ctx.stroke();}
+  // 중심 접근축
+  const a0=proj(0,0,0),a1=proj(xView,0,0);ctx.setLineDash([4,4]);ctx.strokeStyle='rgba(120,150,200,0.4)';ctx.beginPath();ctx.moveTo(a0.sx,a0.sy);ctx.lineTo(a1.sx,a1.sy);ctx.stroke();ctx.setLineDash([]);
+  // 표적 위성(사진 기반: 금박 몸체 + 2단 날개) + 포트
+  _drawSatellite(ctx,proj);
+  ctx.strokeStyle='#4ade80';ctx.lineWidth=2;ctx.beginPath();for(let a=0;a<=36;a++){const th=a/36*2*Math.PI,p=proj(0,PORT_R*Math.cos(th),PORT_R*Math.sin(th));a?ctx.lineTo(p.sx,p.sy):ctx.moveTo(p.sx,p.sy);}ctx.stroke();
+  // 궤적
+  if(sim.trail.length>1){ctx.strokeStyle='rgba(245,167,66,0.55)';ctx.lineWidth=1.5;ctx.beginPath();sim.trail.forEach((p,i)=>{const q=proj(Math.max(p.x,0),p.y,p.z);i?ctx.lineTo(q.sx,q.sy):ctx.moveTo(q.sx,q.sy);});ctx.stroke();}
+  // 로봇 위치·자세·상대속도
+  const cc=proj(Math.max(sim.x,0),sim.y,sim.z);
+  const nf=_noseVec(sim),ne=proj(Math.max(sim.x,0)+nf.x*2.4,sim.y+nf.y*2.4,sim.z+nf.z*2.4);
+  const vrel=Math.sqrt(sim.vx*sim.vx+sim.vy*sim.vy+sim.vz*sim.vz);
+  const Kv=0.22*xView/Math.max(c.v0,0.15),ve=proj(Math.max(sim.x,0)+sim.vx*Kv,sim.y+sim.vy*Kv,sim.z+sim.vz*Kv);
+  const bs=big?11:8;ctx.fillStyle=sim.done?(sim.ok?'#4ade80':'#f2555a'):'#e8edf7';ctx.fillRect(cc.sx-bs/2,cc.sy-bs/2,bs,bs);
+  ctx.fillStyle='#5aa0ff';ctx.fillRect(cc.sx-bs/2-3,cc.sy-2,3,4);ctx.fillRect(cc.sx+bs/2,cc.sy-2,3,4);
+  _arrow(ctx,cc.sx,cc.sy,ne.sx,ne.sy,'#f5a742',2);                                  // 자세(도킹축 지향)
+  const vt=clamp(vrel/Math.max(c.v0,0.15),0,1),vcol=`rgb(${Math.round(74+168*vt)},${Math.round(222-137*vt)},${Math.round(128-38*vt)})`;
+  if(vrel>0.004)_arrow(ctx,cc.sx,cc.sy,ve.sx,ve.sy,vcol,3);                          // 상대속도 벡터(핵심)
+  // ── 속도 일치 시각 효과 ──
+  const match=1-vt;                                                                  // 0=불일치, 1=완전 일치
+  if(!sim.done&&match>0.55){                                                         // 일치 임박: 초록 펄스 링
+    const pulse=(performance.now()/500)%1;
+    ctx.globalAlpha=(1-pulse)*0.55*match;ctx.strokeStyle='#4ade80';ctx.lineWidth=2;
+    ctx.beginPath();ctx.arc(cc.sx,cc.sy,bs+4+pulse*16,0,2*Math.PI);ctx.stroke();ctx.globalAlpha=1;
+  }
+  if(!sim.done&&match>0.7&&sim.x<xView*0.5){                                         // 속도·거리 근접: 포트-로봇 연결 빔
+    const p0=proj(0,0,0);
+    ctx.globalAlpha=0.25+0.25*Math.sin(performance.now()/180);ctx.strokeStyle='#4ade80';ctx.lineWidth=1.5;ctx.setLineDash([6,5]);
+    ctx.beginPath();ctx.moveTo(p0.sx,p0.sy);ctx.lineTo(cc.sx,cc.sy);ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=1;
+  }
+  // 속도 일치 게이지 (하단 중앙 바)
+  const gw=Math.min(220,w*0.42),gx=(w-gw)/2,gy=h-20;
+  ctx.fillStyle='rgba(8,16,29,0.75)';ctx.fillRect(gx-6,gy-13,gw+12,24);
+  ctx.strokeStyle='rgba(90,110,150,0.4)';ctx.strokeRect(gx-6,gy-13,gw+12,24);
+  ctx.fillStyle='rgba(90,110,150,0.25)';ctx.fillRect(gx,gy-5,gw,8);
+  ctx.fillStyle=vcol;ctx.fillRect(gx,gy-5,gw*clamp(match,0,1),8);
+  ctx.font='10px ui-monospace,monospace';ctx.textAlign='center';ctx.fillStyle=match>0.85?'#4ade80':'#8b96ad';
+  ctx.fillText('속도 일치 '+(match*100).toFixed(0)+'%'+(match>0.9?' — 도킹 준비 완료':''),gx+gw/2,gy-16+9);
+  // HUD
+  ctx.textAlign='left';ctx.font='11px ui-monospace,monospace';ctx.fillStyle='#8b96ad';ctx.fillText('거리 '+sim.x.toFixed(1)+' m',8,14);
+  ctx.font='bold 12px ui-monospace,monospace';ctx.fillStyle=vcol;ctx.fillText('상대속도 '+(vrel*100).toFixed(1)+' cm/s',8,30);
+  ctx.font='11px ui-monospace,monospace';ctx.fillStyle='#8b96ad';
+  ctx.fillText('측면 '+Math.sqrt(sim.y*sim.y+sim.z*sim.z).toFixed(2)+' m',8,45);
+  ctx.fillText('자세 '+(Math.sqrt(sim.py*sim.py+sim.yw*sim.yw)/DEG).toFixed(1)+'°',8,59);
+  ctx.fillText('연료 '+sim.fuel.toFixed(2)+' kg',8,73);
+  _spark(ctx,w-104,h-48,96,40,sim.vrelHist,c.v0);
+  // 범례
+  ctx.textAlign='right';ctx.font='10px ui-monospace,monospace';ctx.fillStyle='#f5a742';ctx.fillText('▬ 자세축',w-8,14);ctx.fillStyle=vcol;ctx.fillText('▬ 상대속도',w-8,27);
+  // 결과 오버레이
+  if(sim.done){
+    if(sim.ok){                                                                     // 성공: 포트에서 확산되는 링
+      const p0=proj(0,0,0);
+      for(let k=0;k<3;k++){const ph=((performance.now()/900)+k/3)%1;ctx.globalAlpha=(1-ph)*0.5;ctx.strokeStyle='#4ade80';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(p0.sx,p0.sy,6+ph*46,0,2*Math.PI);ctx.stroke();}
+      ctx.globalAlpha=1;
+    }
+    ctx.fillStyle=sim.ok?'rgba(74,222,128,0.14)':'rgba(242,85,90,0.14)';ctx.fillRect(0,0,w,h);ctx.textAlign='center';ctx.fillStyle=sim.ok?'#4ade80':'#f2555a';ctx.font='bold '+(big?22:15)+'px system-ui';ctx.fillText(sim.ok?'도킹 성공':'도킹 실패',w/2,h/2-4);ctx.fillStyle='#e8edf7';ctx.font='12px system-ui';ctx.fillText(sim.reason,w/2,h/2+16);}
+  // ── 임무 후 궤도 변화 연출 (전체 뷰 전용: 견인/폐기) ──
+  if(boostFx>0||deorbFx>0){
+    const now2=performance.now();
+    if(boostFx>0&&boostFx<1){                                                     // 견인: 로봇 후방 연속 분사
+      const dxp=cc.sx-ne.sx,dyp=cc.sy-ne.sy,L2=Math.hypot(dxp,dyp)||1,ux2=dxp/L2,uy2=dyp/L2;
+      for(let k=0;k<2;k++){const len=16+Math.random()*14+k*9;
+        ctx.fillStyle='rgba(245,167,66,'+(0.6-0.22*k)+')';
+        ctx.beginPath();ctx.moveTo(cc.sx+ux2*8-uy2*4,cc.sy+uy2*8+ux2*4);
+        ctx.lineTo(cc.sx+ux2*(8+len),cc.sy+uy2*(8+len));
+        ctx.lineTo(cc.sx+ux2*8+uy2*4,cc.sy+uy2*8-ux2*4);ctx.closePath();ctx.fill();}
+    }
+    if(deorbFx>0.55){                                                             // 폐기: 재진입 가열
+      const al=Math.min((deorbFx-0.55)*2.2,1);
+      const g5=ctx.createLinearGradient(0,h,0,h*0.28);
+      g5.addColorStop(0,'rgba(255,120,40,'+(0.5*al)+')');g5.addColorStop(1,'rgba(255,120,40,0)');
+      ctx.fillStyle=g5;ctx.fillRect(0,0,w,h);
+      ctx.strokeStyle='rgba(255,190,120,'+(0.55*al)+')';ctx.lineWidth=1.5;         // 플라스마 스트릭
+      for(let k=0;k<10;k++){const sx2=(k*97+now2/4)%w,sy2=h*0.45+((k*61)%Math.round(h*0.5));
+        ctx.beginPath();ctx.moveTo(sx2,sy2);ctx.lineTo(sx2-20-deorbFx*22,sy2+13+deorbFx*15);ctx.stroke();}
+      const hg=ctx.createRadialGradient(cx,cy,4,cx,cy,64+44*al);                   // 기체 가열 림
+      hg.addColorStop(0,'rgba(255,150,60,'+(0.4*al)+')');hg.addColorStop(1,'rgba(255,150,60,0)');
+      ctx.fillStyle=hg;ctx.beginPath();ctx.arc(cx,cy,64+44*al,0,2*Math.PI);ctx.fill();
+    }
+    if(deorbFx>=0.97){                                                            // 소멸
+      ctx.fillStyle='rgba(255,225,185,'+(0.30+0.18*Math.sin(now2/90))+')';ctx.fillRect(0,0,w,h);
+      ctx.textAlign='center';ctx.fillStyle='#ffb066';ctx.font='bold 16px system-ui';
+      ctx.fillText('통제 재진입 완료 — 위성·로봇 대기권 소멸 (잔류 쓰레기 0)',cx,h*0.24);
+    }
+    // 궤도 인셋 다이어그램
+    const iw3=150,ih3=120,ix3=w-iw3-8,iy3=36;
+    ctx.fillStyle='rgba(5,9,18,0.93)';ctx.fillRect(ix3,iy3,iw3,ih3);
+    ctx.strokeStyle='#1c6b5f';ctx.lineWidth=1.2;ctx.strokeRect(ix3,iy3,iw3,ih3);
+    ctx.fillStyle='#38e1c6';ctx.font='9.5px ui-monospace,monospace';ctx.textAlign='left';
+    ctx.fillText('궤도 변화',ix3+7,iy3+13);
+    const ecx=ix3+iw3*0.40,ecy=iy3+ih3*0.57,er3=14;
+    const eg3=ctx.createRadialGradient(ecx-4,ecy-4,3,ecx,ecy,er3);
+    eg3.addColorStop(0,'#3a86c9');eg3.addColorStop(1,'#12263e');
+    ctx.fillStyle=eg3;ctx.beginPath();ctx.arc(ecx,ecy,er3,0,2*Math.PI);ctx.fill();
+    ctx.textAlign='left';ctx.font='9px ui-monospace,monospace';
+    if(boostFx>0){
+      const r0=er3+15,r1=r0+boostFx*15;
+      ctx.strokeStyle='rgba(139,150,173,0.7)';ctx.lineWidth=1;ctx.setLineDash([3,3]);
+      ctx.beginPath();ctx.arc(ecx,ecy,r0,0,2*Math.PI);ctx.stroke();ctx.setLineDash([]);
+      ctx.strokeStyle='#4ade80';ctx.lineWidth=1.6;
+      ctx.beginPath();ctx.arc(ecx,ecy,r1,0,2*Math.PI);ctx.stroke();
+      const a0=now2/650;
+      ctx.fillStyle='#f5a742';ctx.beginPath();ctx.arc(ecx+r1*Math.cos(a0),ecy+r1*Math.sin(a0),3,0,2*Math.PI);ctx.fill();
+      ctx.strokeStyle='#4ade80';ctx.beginPath();ctx.moveTo(ecx+r0+2,ecy);ctx.lineTo(ecx+r1-1,ecy);ctx.stroke();
+      ctx.fillStyle='#8b96ad';ctx.fillText('이전 궤도 - - -',ix3+8,iy3+ih3-22);
+      ctx.fillStyle='#4ade80';ctx.fillText('새 궤도 +'+(boostFx*42).toFixed(0)+' km',ix3+8,iy3+ih3-9);
+    }else{
+      const r0=er3+17;
+      ctx.strokeStyle='rgba(139,150,173,0.7)';ctx.lineWidth=1;ctx.setLineDash([3,3]);
+      ctx.beginPath();ctx.arc(ecx,ecy,r0,0,2*Math.PI);ctx.stroke();ctx.setLineDash([]);
+      ctx.strokeStyle='#f5a742';ctx.lineWidth=1.5;ctx.beginPath();                 // 강하 나선
+      for(let t=0;t<=deorbFx+0.001;t+=0.02){const th=t*2.2*2*Math.PI,r2=r0-(r0-er3+1)*t;
+        const px3=ecx+r2*Math.cos(th),py3=ecy+r2*Math.sin(th);t?ctx.lineTo(px3,py3):ctx.moveTo(px3,py3);}
+      ctx.stroke();
+      const th2=deorbFx*2.2*2*Math.PI,r2=r0-(r0-er3+1)*deorbFx;
+      if(deorbFx<0.97){ctx.fillStyle='#f5a742';ctx.beginPath();ctx.arc(ecx+r2*Math.cos(th2),ecy+r2*Math.sin(th2),3,0,2*Math.PI);ctx.fill();}
+      else{const fx3=ecx+er3*Math.cos(th2),fy3=ecy+er3*Math.sin(th2);
+        ctx.fillStyle='rgba(255,150,60,'+(0.6+0.3*Math.sin(now2/80))+')';
+        ctx.beginPath();ctx.arc(fx3,fy3,6,0,2*Math.PI);ctx.fill();}
+      ctx.fillStyle='#8b96ad';ctx.fillText('강하 나선 궤도',ix3+8,iy3+ih3-22);
+      ctx.fillStyle=deorbFx>=0.97?'#ff9a54':'#f5a742';
+      ctx.fillText(deorbFx>=0.97?'재진입 · 소멸':'고도 −'+(deorbFx*90).toFixed(0)+' km',ix3+8,iy3+ih3-9);
+    }
+    ctx.textAlign='center';
+  }
+}
+/* ═══ 1인칭 시점 (로봇 도킹 카메라) ═══ */
+function drawFPV(cv,sim){
+  if(!cv.clientWidth)return;
+  const {ctx,w,h}=fitCanvas(cv,0.62);ctx.clearRect(0,0,w,h);
+  const cx=w/2, cy=h/2, f=h*1.15;                       // 초점거리(rad→px)
+  const x=Math.max(sim.x,0.4), py=sim.py, yw=sim.yw;
+  const vrel=Math.sqrt(sim.vx*sim.vx+sim.vy*sim.vy+sim.vz*sim.vz);
+  const vt=clamp(vrel/Math.max(sim.cfg.v0,0.15),0,1), match=1-vt;
+  const vcol=`rgb(${Math.round(74+168*vt)},${Math.round(222-137*vt)},${Math.round(128-38*vt)})`;
+  // 임무 진행 상태 (PiP 내부뷰와 도킹 후 연출이 공유)
+  const goal=($('dockGoal')||{}).value||'refuel';
+  const el2=(sim.done&&sim.ok)?performance.now()-(sim.tDone||performance.now()):0;
+  const latch=clamp(el2/1500,0,1), mp=clamp((el2-1800)/9000,0,1);
+  // 배경: 자세에 따라 흐르는 별
+  ctx.fillStyle='#04070f';ctx.fillRect(0,0,w,h);
+  const wrap=(v,m)=>((v%m)+m)%m;
+  STARS.forEach((s,i)=>{if(i%2)return;ctx.globalAlpha=s.b*0.8;ctx.fillStyle='#cdd8f2';ctx.beginPath();ctx.arc(wrap(s.x*w+yw*f,w),wrap(s.y*h+py*f,h),s.r,0,2*Math.PI);ctx.fill();});ctx.globalAlpha=1;
+  // 축 위 점의 화면 위치 (접근축 station s: 포트=0)
+  const ang=s2=>({sx:cx+(Math.atan2(-sim.y,Math.max(x-s2,0.3))-yw)*f, sy:cy-(Math.atan2(-sim.z,Math.max(x-s2,0.3))-py)*f});
+  const port=ang(0), pr=Math.min(Math.atan2(PORT_R,x)*f,h*0.20);   // 상한: 접촉 시에도 위성 몸체 전체가 화면에 보이도록
+  // 접근 회랑 링 (가까울수록 큼)
+  ctx.strokeStyle='rgba(74,222,128,0.30)';ctx.lineWidth=1.2;
+  [0.72,0.45,0.2].forEach(t=>{const s2=x*t,d=x-s2,r=Math.min(Math.atan2(PORT_R+SLOPE*s2,d)*f,h*1.2),p=ang(s2);ctx.beginPath();ctx.arc(p.sx,p.sy,r,0,2*Math.PI);ctx.stroke();});
+  // 표적 위성 (사진 기반: 금박 MLI 몸체 + 2단 날개 + 라디에이터 + 은색 모듈)
+  const bw2=pr*3.8,bh2=pr*2.6,bx=port.sx-bw2/2,by=port.sy-bh2/2;
+  const wingFP=dir=>{const ph2=bh2*0.6,pw2=bw2*0.95,gap=pw2*0.08,y0=port.sy-ph2/2;
+    ctx.strokeStyle='#aeb6c4';ctx.lineWidth=Math.max(pr*0.09,1.5);
+    ctx.beginPath();ctx.moveTo(port.sx+dir*bw2/2,port.sy);ctx.lineTo(port.sx+dir*(bw2/2+gap*1.6),port.sy);ctx.stroke();
+    for(let s2=0;s2<2;s2++){const x0=port.sx+dir*(bw2/2+gap*1.6+s2*(pw2+gap))+(dir<0?-pw2:0);
+      ctx.fillStyle='#16294a';ctx.fillRect(x0,y0,pw2,ph2);
+      ctx.strokeStyle='#4a6b9c';ctx.lineWidth=1;ctx.strokeRect(x0,y0,pw2,ph2);
+      ctx.strokeStyle='rgba(150,180,220,0.35)';ctx.lineWidth=0.7;
+      for(let k=1;k<6;k++){ctx.beginPath();ctx.moveTo(x0+pw2*k/6,y0);ctx.lineTo(x0+pw2*k/6,y0+ph2);ctx.stroke();}
+      ctx.strokeStyle='rgba(200,220,240,0.45)';ctx.beginPath();ctx.moveTo(x0,y0+ph2/2);ctx.lineTo(x0+pw2,y0+ph2/2);ctx.stroke();}
+  };
+  wingFP(-1);wingFP(1);
+  const gb=ctx.createLinearGradient(bx,by,bx,by+bh2);gb.addColorStop(0,'#e9c754');gb.addColorStop(0.55,'#c3952a');gb.addColorStop(1,'#8b6813');
+  ctx.fillStyle=gb;ctx.fillRect(bx,by,bw2,bh2);
+  ctx.strokeStyle='rgba(70,52,10,0.6)';ctx.lineWidth=1.2;ctx.strokeRect(bx,by,bw2,bh2);
+  ctx.strokeStyle='rgba(255,240,185,0.3)';ctx.lineWidth=1;
+  _MLI.forEach(m=>{ctx.beginPath();ctx.moveTo(bx+bw2*m[0],by+bh2*m[1]);ctx.lineTo(bx+bw2*m[2],by+bh2*m[3]);ctx.stroke();});
+  ctx.fillStyle='rgba(242,246,252,0.92)';                                            // 백색 라디에이터
+  ctx.fillRect(bx+bw2*0.08,by+bh2*0.08,bw2*0.16,bh2*0.2);ctx.fillRect(bx+bw2*0.74,by+bh2*0.1,bw2*0.14,bh2*0.16);
+  ctx.fillStyle='#b9c2cf';ctx.fillRect(bx+bw2*0.68,by+bh2*0.66,bw2*0.22,bh2*0.26);   // 은색 모듈
+  ctx.strokeStyle='#7e8794';ctx.lineWidth=1;ctx.strokeRect(bx+bw2*0.68,by+bh2*0.66,bw2*0.22,bh2*0.26);
+  // ── 도킹면 실기기 (MEV-1 ↔ Intelsat 901 방식) ──
+  // MLI 클로즈아웃 (어댑터 주변 어두운 금박)
+  const rg3=ctx.createRadialGradient(port.sx,port.sy,pr*0.2,port.sx,port.sy,pr*2.05);
+  rg3.addColorStop(0,'rgba(58,42,9,0.6)');rg3.addColorStop(0.8,'rgba(58,42,9,0.25)');rg3.addColorStop(1,'rgba(58,42,9,0)');
+  ctx.fillStyle=rg3;ctx.beginPath();ctx.arc(port.sx,port.sy,pr*2.05,0,2*Math.PI);ctx.fill();
+  // MLI 봉제선 (방사형)
+  ctx.strokeStyle='rgba(94,68,14,0.55)';ctx.lineWidth=1;
+  for(let k=0;k<8;k++){const a0=k*Math.PI/4+0.2;ctx.beginPath();ctx.moveTo(port.sx+pr*1.45*Math.cos(a0),port.sy+pr*1.45*Math.sin(a0));ctx.lineTo(port.sx+pr*2.6*Math.cos(a0),port.sy+pr*2.6*Math.sin(a0));ctx.stroke();}
+  // 발사 어댑터 링 (금속, 실제 캡처 인터페이스)
+  ctx.lineWidth=Math.max(pr*0.17,3);ctx.strokeStyle='#5f6773';ctx.beginPath();ctx.arc(port.sx,port.sy,pr*1.3,0,2*Math.PI);ctx.stroke();
+  ctx.lineWidth=Math.max(pr*0.07,1.4);ctx.strokeStyle='#cfd6e0';ctx.beginPath();ctx.arc(port.sx,port.sy,pr*1.24,0,2*Math.PI);ctx.stroke();
+  ctx.lineWidth=1;ctx.strokeStyle='#2e333c';ctx.beginPath();ctx.arc(port.sx,port.sy,pr*1.37,0,2*Math.PI);ctx.stroke();
+  ctx.fillStyle='#333a45';
+  for(let k=0;k<12;k++){const a0=k*Math.PI/6;ctx.beginPath();ctx.arc(port.sx+pr*1.3*Math.cos(a0),port.sy+pr*1.3*Math.sin(a0),Math.max(pr*0.05,1.4),0,2*Math.PI);ctx.fill();}
+  // 원지점 엔진(LAE) 노즐 — 도킹 프로브 삽입 지점
+  const ng=ctx.createRadialGradient(port.sx-pr*0.16,port.sy-pr*0.16,pr*0.05,port.sx,port.sy,pr*0.75);
+  ng.addColorStop(0,'#4a515e');ng.addColorStop(0.5,'#262b33');ng.addColorStop(1,'#0c0e13');
+  ctx.fillStyle=ng;ctx.beginPath();ctx.arc(port.sx,port.sy,pr*0.75,0,2*Math.PI);ctx.fill();
+  ctx.strokeStyle='#828b99';ctx.lineWidth=Math.max(pr*0.05,1.2);ctx.stroke();
+  ctx.strokeStyle='rgba(130,139,153,0.4)';ctx.lineWidth=1;                             // 노즐 냉각 링
+  [0.6,0.46].forEach(t=>{ctx.beginPath();ctx.arc(port.sx,port.sy,pr*t,0,2*Math.PI);ctx.stroke();});
+  ctx.fillStyle='#04050a';ctx.beginPath();ctx.arc(port.sx,port.sy,pr*0.3,0,2*Math.PI);ctx.fill();
+  // 광학 도킹 표적 3개 (Orbital Express식 레트로 리플렉터)
+  for(let k=0;k<3;k++){const a0=-Math.PI/2+k*2*Math.PI/3,fx2=port.sx+pr*1.74*Math.cos(a0),fy2=port.sy+pr*1.74*Math.sin(a0),fr2=Math.max(pr*0.17,3.2);
+    ctx.fillStyle='#f2f5fa';ctx.beginPath();ctx.arc(fx2,fy2,fr2,0,2*Math.PI);ctx.fill();
+    ctx.strokeStyle='#14181f';ctx.lineWidth=Math.max(fr2*0.26,1);
+    ctx.beginPath();ctx.arc(fx2,fy2,fr2*0.6,0,2*Math.PI);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(fx2-fr2*0.95,fy2);ctx.lineTo(fx2+fr2*0.95,fy2);ctx.moveTo(fx2,fy2-fr2*0.95);ctx.lineTo(fx2,fy2+fr2*0.95);ctx.stroke();}
+  // RCS 스러스터 쿼드 (하단 모서리 2곳)
+  const quad2=(qx,qy,dir)=>{ctx.fillStyle='#2b303a';
+    [[dir,0.3],[dir,-0.3]].forEach(d=>{ctx.beginPath();ctx.moveTo(qx,qy);ctx.lineTo(qx+d[0]*Math.max(pr*0.32,6),qy+d[1]*Math.max(pr*0.32,6)-3);ctx.lineTo(qx+d[0]*Math.max(pr*0.32,6),qy+d[1]*Math.max(pr*0.32,6)+3);ctx.closePath();ctx.fill();});
+    ctx.strokeStyle='#6d7684';ctx.lineWidth=1;ctx.strokeRect(qx-3,qy-4,6,8);};
+  quad2(bx+bw2*0.045,by+bh2*0.86,-1);quad2(bx+bw2*0.955,by+bh2*0.86,1);
+  // 엄빌리컬 커넥터 패널 (색 커넥터 4구)
+  const ux=bx+bw2*0.06,uy2=by+bh2*0.56,uw=bw2*0.15,uh=bh2*0.16;
+  ctx.fillStyle='#8f99a8';ctx.fillRect(ux,uy2,uw,uh);ctx.strokeStyle='#39404c';ctx.lineWidth=1;ctx.strokeRect(ux,uy2,uw,uh);
+  ['#d9534f','#f0ad4e','#5bc0de','#5cb85c'].forEach((c2,k)=>{ctx.fillStyle=c2;ctx.beginPath();ctx.arc(ux+uw*(0.16+0.22*k),uy2+uh/2,Math.max(uw*0.07,1.6),0,2*Math.PI);ctx.fill();});
+  // EVA 핸드레일 (황동색)
+  ctx.strokeStyle='#d8c26a';ctx.lineWidth=Math.max(pr*0.07,2);
+  ctx.beginPath();ctx.moveTo(bx+bw2*0.32,by+bh2*0.94);ctx.lineTo(bx+bw2*0.68,by+bh2*0.94);ctx.stroke();
+  // 충전·배출(F/D) 밸브 — 급유가 이뤄지는 실제 지점 (도킹 노즐과 별개)
+  const fvx=port.sx+pr*1.62,fvy=port.sy+pr*1.18,fvr=Math.max(pr*0.14,3);
+  ctx.fillStyle='#39404c';ctx.beginPath();ctx.arc(fvx,fvy,fvr,0,2*Math.PI);ctx.fill();
+  ctx.strokeStyle='#9aa3b2';ctx.lineWidth=1.4;ctx.stroke();
+  ctx.fillStyle='#c9d1dc';ctx.beginPath();ctx.arc(fvx,fvy,fvr*0.4,0,2*Math.PI);ctx.fill();
+  if(pr>14){ctx.fillStyle='#8b96ad';ctx.font='8px ui-monospace,monospace';ctx.textAlign='center';ctx.fillText('F/D',fvx,fvy+fvr+9);}
+  // GNC 유도 오버레이 (얇은 초록 그래픽 — 실기기 위 HUD)
+  ctx.strokeStyle='rgba(74,222,128,0.75)';ctx.lineWidth=1.2;
+  ctx.beginPath();ctx.arc(port.sx,port.sy,pr,0,2*Math.PI);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(port.sx-pr*1.55,port.sy);ctx.lineTo(port.sx-pr*0.88,port.sy);ctx.moveTo(port.sx+pr*0.88,port.sy);ctx.lineTo(port.sx+pr*1.55,port.sy);ctx.moveTo(port.sx,port.sy-pr*1.55);ctx.lineTo(port.sx,port.sy-pr*0.88);ctx.moveTo(port.sx,port.sy+pr*0.88);ctx.lineTo(port.sx,port.sy+pr*1.55);ctx.stroke();
+  // 근접(7m 이내): 캡처 엔벨로프 표시
+  if(x<7&&!sim.done){
+    ctx.strokeStyle='rgba(245,167,66,0.55)';ctx.lineWidth=Math.max(pr*0.05,1.5);ctx.setLineDash([pr*0.18,pr*0.18]);
+    ctx.beginPath();ctx.arc(port.sx,port.sy,pr*1.52,0,2*Math.PI);ctx.stroke();ctx.setLineDash([]);
+  }
+  // 포트에서의 횡방향 표류(상대속도 y·z) 벡터
+  if(vrel>0.004){const k=f*0.9;_arrow(ctx,port.sx,port.sy,port.sx+(-sim.vy)*k/Math.max(x,1)*3,port.sy-(-sim.vz)*k/Math.max(x,1)*3,vcol,2.5);}
+  // ── 근접 3인칭: 화면 안에 로봇 기체가 보이며 표적으로 다가감 ──
+  const RB={sx:cx-w*0.21,sy:cy+h*0.15}, rs=Math.max(w*0.055,30);
+  // 접근 경로선 (로봇 → 포트)
+  ctx.setLineDash([5,6]);ctx.strokeStyle=match>0.85?'rgba(74,222,128,0.55)':'rgba(120,150,200,0.4)';ctx.lineWidth=1.3;
+  ctx.beginPath();ctx.moveTo(RB.sx+rs*0.7,RB.sy);ctx.lineTo(port.sx,port.sy);ctx.stroke();ctx.setLineDash([]);
+  // 매니퓰레이터 팔 2개 — 근접할수록 포트로 뻗음 (도킹 후엔 완전히 부착)
+  const reach=Math.max(clamp((10-x)/10,0,1), sim.done&&sim.ok?1:0);
+  const nose={sx:RB.sx+rs*0.82,sy:RB.sy};
+  const mkTip=dir=>_lerpP({sx:nose.sx,sy:nose.sy+dir*rs*0.3},{sx:port.sx+dir*pr*0.55,sy:port.sy+pr*0.85},reach*0.92);
+  const tipL=mkTip(1),tipR=mkTip(-1);
+  [[tipL,1],[tipR,-1]].forEach(v=>{const tp=v[0],dir=v[1];
+    ctx.strokeStyle='#39445c';ctx.lineWidth=Math.max(rs*0.11,4);ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(RB.sx+rs*0.4,RB.sy+dir*rs*0.28);ctx.lineTo(nose.sx,nose.sy+dir*rs*0.3);ctx.lineTo(tp.sx,tp.sy);ctx.stroke();
+    ctx.strokeStyle='#5aa0ff';ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(RB.sx+rs*0.4,RB.sy+dir*rs*0.28);ctx.lineTo(nose.sx,nose.sy+dir*rs*0.3);ctx.lineTo(tp.sx,tp.sy);ctx.stroke();ctx.lineCap='butt';
+    const sp=sim.done&&sim.ok?0.1:0.38,g1=Math.atan2(port.sy-tp.sy,port.sx-tp.sx);
+    ctx.strokeStyle='#c8cdd8';ctx.lineWidth=2.5;
+    [-1,1].forEach(s2=>{ctx.beginPath();ctx.moveTo(tp.sx,tp.sy);ctx.lineTo(tp.sx+11*Math.cos(g1+s2*sp),tp.sy+11*Math.sin(g1+s2*sp));ctx.stroke();});
+  });
+  // 로봇 태양전지 (상·하 미니 패널)
+  const pan=(dy)=>{const px2=RB.sx-rs*0.26,py2=RB.sy+dy,pw3=rs*0.52,ph3=rs*0.6;
+    ctx.fillStyle='#16294a';ctx.fillRect(px2,py2,pw3,ph3);ctx.strokeStyle='#4a6b9c';ctx.lineWidth=1;ctx.strokeRect(px2,py2,pw3,ph3);
+    ctx.strokeStyle='rgba(150,180,220,0.4)';for(let k=1;k<3;k++){ctx.beginPath();ctx.moveTo(px2,py2+ph3*k/3);ctx.lineTo(px2+pw3,py2+ph3*k/3);ctx.stroke();}};
+  pan(-rs*1.12); pan(rs*0.52);
+  // 로봇 몸체 (은백색 + 청록 스트라이프)
+  const rg2=ctx.createLinearGradient(RB.sx-rs*0.6,0,RB.sx+rs*0.6,0);rg2.addColorStop(0,'#f0f3f8');rg2.addColorStop(0.55,'#c3cad6');rg2.addColorStop(1,'#96a0b0');
+  ctx.fillStyle=rg2;ctx.fillRect(RB.sx-rs*0.6,RB.sy-rs*0.4,rs*1.2,rs*0.8);
+  ctx.strokeStyle='#5a6478';ctx.lineWidth=1.2;ctx.strokeRect(RB.sx-rs*0.6,RB.sy-rs*0.4,rs*1.2,rs*0.8);
+  ctx.fillStyle='#38e1c6';ctx.fillRect(RB.sx-rs*0.6,RB.sy-rs*0.08,rs*1.2,rs*0.16);
+  ctx.fillStyle='#131a28';ctx.beginPath();ctx.arc(RB.sx+rs*0.32,RB.sy-rs*0.2,rs*0.09,0,2*Math.PI);ctx.fill();
+  // 노즈 도킹 프로브
+  ctx.fillStyle='#8f99a8';ctx.beginPath();ctx.moveTo(RB.sx+rs*0.6,RB.sy-rs*0.12);ctx.lineTo(RB.sx+rs*0.88,RB.sy);ctx.lineTo(RB.sx+rs*0.6,RB.sy+rs*0.12);ctx.closePath();ctx.fill();
+  // RCS 분사 (로봇 몸체에 부착)
+  const a=sim.aCmd||{x:0,y:0,z:0},thr=0.004,puff=(px2,py2,dx,dy,col)=>{ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(px2,py2);ctx.lineTo(px2+dx*(rs*0.5+Math.random()*rs*0.2)+dy*4,py2+dy*(rs*0.5+Math.random()*rs*0.2)+dx*4);ctx.lineTo(px2+dx*(rs*0.5+Math.random()*rs*0.2)-dy*4,py2+dy*(rs*0.5+Math.random()*rs*0.2)-dx*4);ctx.closePath();ctx.fill();};
+  const cyn='rgba(56,225,198,0.8)';
+  if(a.y>thr)puff(RB.sx,RB.sy+rs*0.42,0,1,cyn); if(a.y<-thr)puff(RB.sx,RB.sy-rs*0.42,0,-1,cyn);
+  if(a.z>thr)puff(RB.sx-rs*0.35,RB.sy+rs*0.42,0,1,cyn); if(a.z<-thr)puff(RB.sx-rs*0.35,RB.sy-rs*0.42,0,-1,cyn);
+  if(a.x>thr){puff(RB.sx+rs*0.62,RB.sy-rs*0.3,1,-0.15,'rgba(245,167,66,0.85)');puff(RB.sx+rs*0.62,RB.sy+rs*0.3,1,0.15,'rgba(245,167,66,0.85)');
+    ctx.fillStyle='rgba(245,167,66,0.85)';ctx.font='10px ui-monospace,monospace';ctx.textAlign='center';ctx.fillText('감속 분사',RB.sx,RB.sy+rs*1.05+14);}
+  else if(a.x<-thr){puff(RB.sx-rs*0.62,RB.sy,-1,0,'rgba(245,167,66,0.85)');
+    ctx.fillStyle='rgba(245,167,66,0.85)';ctx.font='10px ui-monospace,monospace';ctx.textAlign='center';ctx.fillText('가속 분사',RB.sx,RB.sy+rs*1.05+14);}
+  // HUD (좌: 거리/접근, 우: 상대속도)
+  ctx.textAlign='left';ctx.font='12px ui-monospace,monospace';ctx.fillStyle='#8b96ad';
+  ctx.fillText('RANGE  '+sim.x.toFixed(1)+' m',10,18);
+  ctx.fillText('CLOSE  '+(-sim.vx*100).toFixed(1)+' cm/s',10,34);
+  ctx.fillText('LAT    '+Math.hypot(sim.y,sim.z).toFixed(2)+' m',10,50);
+  ctx.fillText('ATT    '+(Math.hypot(py,yw)/DEG).toFixed(1)+'°',10,66);
+  ctx.fillStyle=vcol;ctx.font='bold 12.5px ui-monospace,monospace';
+  ctx.fillText('상대속도 '+(vrel*100).toFixed(1)+' cm/s',10,86);
+  ctx.fillStyle='#8b96ad';ctx.font='11px ui-monospace,monospace';ctx.fillText('일치 '+(match*100).toFixed(0)+'%',10,101);
+  // 접근 단계 안내 (구체적 상호작용)
+  ctx.textAlign='center';ctx.font='11px ui-monospace,monospace';ctx.fillStyle='rgba(232,237,247,0.75)';
+  const phase=sim.done?'':(x>30?'① 원거리 접근 — 레이더로 표적 추적':(x>10?'② 회랑 진입 — 광학 표적(리플렉터) 정렬':(x>3?'③ 최종 접근 — 상대속도 10 cm/s 이하로 감속':'④ 접촉 직전 — 프로브를 엔진 노즐에 삽입')));
+  if(phase)ctx.fillText(phase,cx,h-12);
+  // 도킹 완료/실패 연출
+  if(sim.done){
+    if(sim.ok){
+      ctx.strokeStyle='#4ade80';ctx.lineWidth=3;                                     // 캡처 래치 3개가 닫힘
+      for(let k2=0;k2<3;k2++){const a0=-Math.PI/2+k2*2*Math.PI/3,cl=latch*0.5;ctx.beginPath();ctx.arc(port.sx,port.sy,pr+7,a0-0.55+cl,a0+0.55-cl);ctx.stroke();}
+      const GL={refuel:'연료 재급유',battery:'배터리 교체',repair:'부품 수리·유지보수',boost:'궤도 상향 견인',deorbit:'수명종료 폐기 유도'}[goal];
+      const now=performance.now();
+      // 은색 모듈 좌표 (배터리 슬롯)
+      const mx=bx+bw2*0.68,my=by+bh2*0.66,mw=bw2*0.22,mh=bh2*0.26;
+      if(latch>=1&&mp<1){
+        if(goal==='refuel'){                                                        // ① RRM식 밸브 개방 → GHe 가압 압력차 이송
+          const fvx=port.sx+pr*1.62,fvy=port.sy+pr*1.18;                            // F/D 밸브 위치
+          const STEPS=[[0.08,'① 다층 단열재 절개'],[0.14,'② 안전선(록와이어) 절단'],[0.20,'③ 밸브 캡 제거·회수'],[0.26,'④ 노즐 결합 · GHe 가압']];
+          const stepIdx=STEPS.findIndex(s=>mp<s[0]);
+          if(stepIdx>=0){                                                           // — 밸브 개방 절차 —
+            const tp2=tipR;                                                         // 작업 팔
+            ctx.strokeStyle='#5aa0ff';ctx.lineWidth=1.4;ctx.setLineDash([3,3]);
+            ctx.beginPath();ctx.moveTo(tp2.sx,tp2.sy);ctx.lineTo(fvx,fvy);ctx.stroke();ctx.setLineDash([]);
+            // MLI 플랩 (절개되어 젖혀짐)
+            const flap=clamp(mp/0.08,0,1);
+            ctx.fillStyle='rgba(201,154,45,0.9)';ctx.save();ctx.translate(fvx-pr*0.5,fvy);ctx.rotate(-flap*1.15);
+            ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(pr*0.95,-pr*0.12);ctx.lineTo(pr*0.95,pr*0.3);ctx.lineTo(0,pr*0.36);ctx.closePath();ctx.fill();
+            ctx.strokeStyle='rgba(94,68,14,0.8)';ctx.lineWidth=1;ctx.stroke();ctx.restore();
+            // 안전선 (앰버 지그재그, 절단 전만)
+            if(mp<0.14){ctx.strokeStyle='#f5a742';ctx.lineWidth=1.6;ctx.beginPath();
+              for(let k=0;k<=4;k++)ctx.lineTo(fvx-pr*0.32+k*pr*0.16,fvy+((k%2)?-1:1)*pr*0.14);ctx.stroke();}
+            // 밸브 캡 (3단계에서 팔 쪽으로 회수)
+            if(mp>=0.14){const t2=clamp((mp-0.14)/0.06,0,1);
+              const cx3=fvx+(tp2.sx-fvx)*t2,cy3=fvy+(tp2.sy-fvy)*t2;
+              ctx.fillStyle='#8f99a8';ctx.beginPath();
+              for(let k=0;k<6;k++){const a0=k*Math.PI/3;k?ctx.lineTo(cx3+pr*0.2*Math.cos(a0),cy3+pr*0.2*Math.sin(a0)):ctx.moveTo(cx3+pr*0.2*Math.cos(a0),cy3+pr*0.2*Math.sin(a0));}
+              ctx.closePath();ctx.fill();ctx.strokeStyle='#39404c';ctx.lineWidth=1;ctx.stroke();}
+            ctx.fillStyle='#f5a742';ctx.font='10px ui-monospace,monospace';ctx.textAlign='center';
+            ctx.fillText(STEPS[stepIdx][1],cx,64);
+          }else{                                                                    // — 이송: 압력차 2–4 bar, 무배기 충전 —
+            const fl=clamp((mp-0.26)/0.69,0,1);
+            const hx=nose.sx,hy=nose.sy+rs*0.15,mxx=(hx+fvx)/2,mxy=Math.max(hy,fvy)+40;
+            ctx.strokeStyle='#f5a742';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(hx,hy);ctx.quadraticCurveTo(mxx,mxy,fvx,fvy);ctx.stroke();
+            ctx.strokeStyle='#ffd98a';ctx.lineWidth=2;ctx.setLineDash([9,13]);ctx.lineDashOffset=-(now/26)%22;
+            ctx.beginPath();ctx.moveTo(hx,hy);ctx.quadraticCurveTo(mxx,mxy,fvx,fvy);ctx.stroke();ctx.setLineDash([]);
+            // QD 커플러 (호스 중간)
+            ctx.fillStyle='#8f99a8';ctx.fillRect(mxx-11,mxy*0.5+ (hy+fvy)*0.25 -8,22,16);
+            ctx.strokeStyle='#39404c';ctx.lineWidth=1;ctx.strokeRect(mxx-11,mxy*0.5+(hy+fvy)*0.25-8,22,16);
+            ctx.fillStyle='#131a28';ctx.font='8px ui-monospace,monospace';ctx.textAlign='center';ctx.fillText('QD',mxx,mxy*0.5+(hy+fvy)*0.25+3);
+            // 압력·상태 표기 (압력차 이송 + 무배기 충전)
+            ctx.fillStyle='#f5a742';ctx.font='10px ui-monospace,monospace';
+            ctx.fillText('GHe 가압 ΔP '+(2.2+1.4*Math.sin(now/900)*0.5+fl*0.8).toFixed(1)+' bar → 펌프 없이 이송',cx,64);
+            ctx.fillStyle='#5bc0de';ctx.fillText('무배기 충전: 과냉 액체가 증기를 응축 (배기 금지)',cx,78);
+            // 수급 게이지
+            ctx.fillStyle='rgba(8,16,29,0.8)';ctx.fillRect(w-34,cy-60,20,120);ctx.strokeStyle='#5a6580';ctx.strokeRect(w-34,cy-60,20,120);
+            ctx.fillStyle='#f5a742';const fh2=116*fl;ctx.fillRect(w-32,cy+58-fh2,16,fh2);
+            ctx.fillStyle='#8b96ad';ctx.font='8px ui-monospace,monospace';ctx.fillText('P₂',w-24,cy-66);
+          }
+        }else if(goal==='battery'){                                                 // ② 배터리 교체 (구형 배출→신형 장착)
+          ctx.strokeStyle='#39445c';ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(tipR.sx,tipR.sy);ctx.lineTo(mx+mw/2,my+mh/2);ctx.stroke();
+          const bw3=mw*0.78,bh3=mh*0.62;
+          // 빈 슬롯 (가이드 레일 보이게)
+          ctx.strokeStyle='rgba(90,110,150,0.5)';ctx.lineWidth=1;ctx.strokeRect(mx+mw*0.08,my+mh*0.16,bw3,bh3);
+          ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(mx+mw*0.08,my+mh*0.16+bh3/2);ctx.lineTo(mx+mw*0.08+bw3,my+mh*0.16+bh3/2);ctx.stroke();ctx.setLineDash([]);
+          if(mp<0.45){const t=mp/0.45,ox=mx+mw*0.08+(RB.sx-mx)*t*0.95,oy=my+mh*0.16+(RB.sy-my)*t*0.95;
+            _batt3d(ctx,ox,oy,bw3,bh3,BATT_OLD,28);
+            ctx.fillStyle='#f5a742';ctx.font='9px ui-monospace,monospace';ctx.textAlign='center';ctx.fillText('노후 배터리 회수',ox+bw3/2,oy+bh3+13);}
+          else{const t=clamp((mp-0.5)/0.45,0,1),nx=RB.sx-bw3/2+(mx+mw*0.08-RB.sx+bw3/2)*t,ny=RB.sy+(my+mh*0.16-RB.sy)*t;
+            _batt3d(ctx,nx,ny,bw3,bh3,BATT_NEW,100);
+            ctx.fillStyle='#4ade80';ctx.font='9px ui-monospace,monospace';ctx.textAlign='center';ctx.fillText('신품 장착',nx+bw3/2,ny+bh3+13);}
+        }else if(goal==='repair'){                                                  // ③ 수리: 팔이 라디에이터에 스파크
+          const rx2=bx+bw2*0.16,ry2=by+bh2*0.18;
+          ctx.strokeStyle='#39445c';ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(tipL.sx,tipL.sy);ctx.lineTo(rx2,ry2);ctx.stroke();
+          if(mp<0.9)for(let k2=0;k2<6;k2++){const a0=Math.random()*2*Math.PI,r2=Math.random()*12+3;ctx.strokeStyle=Math.random()<0.5?'#ffd98a':'#fff';ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(rx2,ry2);ctx.lineTo(rx2+r2*Math.cos(a0),ry2+r2*Math.sin(a0));ctx.stroke();}
+          ctx.fillStyle=`rgba(${Math.round(242-168*mp)},${Math.round(85+137*mp)},${Math.round(90+38*mp)},0.5)`;
+          ctx.fillRect(bx+bw2*0.08,by+bh2*0.08,bw2*0.16,bh2*0.2);
+        }else if(goal==='boost'){                                                   // ④ 견인: 로봇 후방 분사 + 별 흘림 + 고도 상승
+          for(let k2=0;k2<3;k2++){ctx.fillStyle='rgba(245,167,66,'+(0.5+0.3*Math.random())+')';const fy=RB.sy-14+k2*14;ctx.beginPath();ctx.moveTo(RB.sx-rs*0.62,fy-5);ctx.lineTo(RB.sx-rs*0.62-26-Math.random()*16,fy);ctx.lineTo(RB.sx-rs*0.62,fy+5);ctx.closePath();ctx.fill();}
+          ctx.strokeStyle='rgba(205,216,242,0.5)';ctx.lineWidth=1;
+          for(let k2=0;k2<12;k2++){const sx2=(k2*79)%w,sy2=(k2*137+now/6)%h;ctx.beginPath();ctx.moveTo(sx2,sy2);ctx.lineTo(sx2,sy2+10+mp*18);ctx.stroke();}
+          ctx.fillStyle='#4ade80';ctx.font='bold 13px ui-monospace,monospace';ctx.fillText('고도 +'+(mp*42).toFixed(1)+' km ↑',cx,cy+pr+30);
+        }else if(goal==='deorbit'){                                                 // ⑤ 폐기: 전방 역추진 + 고도 하강 + 재진입 광
+          for(let k2=0;k2<2;k2++){ctx.fillStyle='rgba(90,160,255,'+(0.5+0.3*Math.random())+')';const fy=RB.sy-10+k2*20;ctx.beginPath();ctx.moveTo(RB.sx+rs*0.85,fy-5);ctx.lineTo(RB.sx+rs*0.85+24+Math.random()*14,fy);ctx.lineTo(RB.sx+rs*0.85,fy+5);ctx.closePath();ctx.fill();}
+          ctx.strokeStyle='rgba(205,216,242,0.5)';ctx.lineWidth=1;
+          for(let k2=0;k2<12;k2++){const sx2=(k2*83)%w,sy2=h-((k2*131+now/6)%h);ctx.beginPath();ctx.moveTo(sx2,sy2);ctx.lineTo(sx2,sy2-10-mp*18);ctx.stroke();}
+          if(mp>0.65){ctx.fillStyle='rgba(242,120,60,'+(mp-0.65)*1.4+')';ctx.fillRect(0,h*0.7,w,h*0.3);}
+          ctx.fillStyle='#f5a742';ctx.font='bold 13px ui-monospace,monospace';ctx.fillText('고도 −'+(mp*90).toFixed(1)+' km ↓ 통제 재진입',cx,cy+pr+30);
+        }
+      }
+      ctx.fillStyle='rgba(74,222,128,0.10)';ctx.fillRect(0,0,w,h);
+      ctx.textAlign='center';ctx.fillStyle='#4ade80';ctx.font='bold 16px system-ui';
+      ctx.fillText(mp>=1?'✓ 임무 완료 — '+GL:'소프트 캡처 완료 · '+GL,cx,28);
+      ctx.font='12px system-ui';ctx.fillStyle='#e8edf7';
+      ctx.fillText(latch<1?'캡처 래치 잠금 중…':(mp>=1?'로봇 분리 준비':GL+' 진행 '+Math.round(mp*100)+'%'),cx,46);
+      if(latch>=1&&mp<1){ctx.fillStyle='rgba(8,16,29,0.7)';ctx.fillRect(cx-70,52,140,8);ctx.fillStyle='#4ade80';ctx.fillRect(cx-70,52,140*mp,8);}
+    }else{
+      ctx.fillStyle='rgba(242,85,90,0.20)';ctx.fillRect(0,0,w,h);
+      ctx.fillStyle='#f2555a';ctx.font='bold 17px system-ui';ctx.fillText('도킹 실패',cx,cy-30);
+      ctx.font='12px system-ui';ctx.fillStyle='#e8edf7';ctx.fillText(sim.reason,cx,cy-10);
+    }
+  }
+  // ── PiP: 위성 내부 상태 (우상단 1/4) ──
+  {
+    const pw4=w*0.27, ph4=h*0.34, px4=w-pw4-8, py4=8;
+    ctx.fillStyle='rgba(5,9,18,0.93)';ctx.fillRect(px4,py4,pw4,ph4);
+    ctx.strokeStyle='#1c6b5f';ctx.lineWidth=1.2;ctx.strokeRect(px4,py4,pw4,ph4);
+    ctx.fillStyle='#38e1c6';ctx.font='9.5px ui-monospace,monospace';ctx.textAlign='left';
+    ctx.fillText('위성 내부 상태',px4+7,py4+13);
+    // 절개도 외곽 (금박 몸체 단면)
+    const ix=px4+7,iy=py4+19,iw2=pw4-14,ih2=ph4-42;
+    ctx.strokeStyle='#c99a2d';ctx.lineWidth=1.4;ctx.strokeRect(ix,iy,iw2,ih2);
+    // 다이어프램 연료 탱크 (좌측): 위 GHe 가압가스 / 탄성 막 / 아래 액체 — 치약튜브 원리
+    const fLv=clamp(0.14+(goal==='refuel'?mp*0.8:0),0,0.95);
+    const tx2=ix+5,ty2=iy+5,tw2=iw2*0.38,th2=ih2-10;
+    const lvY=ty2+th2*(1-fLv), bulge=th2*0.10*(0.3+fLv);
+    ctx.fillStyle='rgba(90,110,150,0.20)';ctx.fillRect(tx2,ty2,tw2,th2);          // GHe 영역
+    ctx.fillStyle='#f5a742';                                                       // 액체 (막 아래)
+    ctx.beginPath();ctx.moveTo(tx2,lvY);ctx.quadraticCurveTo(tx2+tw2/2,lvY-bulge*2,tx2+tw2,lvY);
+    ctx.lineTo(tx2+tw2,ty2+th2);ctx.lineTo(tx2,ty2+th2);ctx.closePath();ctx.fill();
+    ctx.strokeStyle='#e8edf7';ctx.lineWidth=1.8;                                   // 다이어프램 막
+    ctx.beginPath();ctx.moveTo(tx2,lvY);ctx.quadraticCurveTo(tx2+tw2/2,lvY-bulge*2,tx2+tw2,lvY);ctx.stroke();
+    ctx.strokeStyle='#5a6580';ctx.lineWidth=1;ctx.strokeRect(tx2,ty2,tw2,th2);
+    ctx.fillStyle='#8b96ad';ctx.font='7.5px ui-monospace,monospace';ctx.textAlign='center';
+    ctx.fillText('GHe',tx2+tw2/2,ty2+9);
+    ctx.fillStyle='#131a28';ctx.font='8px ui-monospace,monospace';
+    ctx.fillText(Math.round(fLv*100)+'%',tx2+tw2/2,ty2+th2-4);
+    if(goal==='refuel'&&sim.done&&sim.ok&&mp>0.26&&mp<0.95){
+      // 유입구 화살표 + 무배기 충전(증기 응축) 청록 방울
+      ctx.strokeStyle='#f5a742';ctx.lineWidth=2;
+      ctx.beginPath();ctx.moveTo(tx2+tw2/2,ty2+th2+5);ctx.lineTo(tx2+tw2/2,ty2+th2-4);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(tx2+tw2/2-3,ty2+th2-1);ctx.lineTo(tx2+tw2/2,ty2+th2-6);ctx.lineTo(tx2+tw2/2+3,ty2+th2-1);ctx.closePath();ctx.fillStyle='#f5a742';ctx.fill();
+      for(let k2=0;k2<3;k2++){const ph2=((performance.now()/1100)+k2/3)%1;
+        ctx.fillStyle='rgba(91,192,222,'+(0.75*(1-ph2))+')';
+        ctx.beginPath();ctx.arc(tx2+tw2*(0.25+0.25*k2),lvY-bulge-4-ph2*10,2.4*(1-ph2*0.5),0,2*Math.PI);ctx.fill();}
+    }
+    // 배터리 베이 (우상): 3D 배터리 팩 2개 — 교체 임무 시 슬롯 비움→신품
+    const bx2=ix+iw2*0.5,by2=iy+9,bw4=iw2*0.46,bh4=ih2*0.34;
+    const swapping=goal==='battery'&&sim.done&&sim.ok;
+    for(let k2=0;k2<2;k2++){
+      const cx2=bx2+k2*(bw4/2+3), cw3=bw4/2-6, empty=swapping&&mp>=0.4&&mp<0.58&&k2===0;
+      let C=BATT_OLD, pct=28;
+      if((swapping&&(k2===0?mp>=0.58:mp>=0.92))||(goal==='battery'&&mp>=1)){C=BATT_NEW;pct=100;}
+      if(empty){ctx.strokeStyle='#5a6580';ctx.lineWidth=1;ctx.setLineDash([2,2]);ctx.strokeRect(cx2,by2,cw3,bh4);ctx.setLineDash([]);}
+      else _batt3d(ctx,cx2,by2,cw3,bh4,C,pct);
+    }
+    ctx.fillStyle='#8b96ad';ctx.font='8px ui-monospace,monospace';ctx.textAlign='center';
+    ctx.fillText('배터리 베이',bx2+bw4/2-1,by2+bh4+10);
+    // 시스템 램프 (우하): 자세 / 통신 / 열(수리 대상)
+    const ly2=iy+ih2*0.66, lamps=[['자세','#4ade80'],['통신','#4ade80'],['열',goal==='repair'?(mp>=0.9?'#4ade80':(sim.done&&sim.ok?'#f5a742':'#f2555a')):'#4ade80']];
+    lamps.forEach((L,k2)=>{const lx2=bx2+6+k2*(bw4/3);
+      ctx.fillStyle=L[1];ctx.beginPath();ctx.arc(lx2,ly2,3.2,0,2*Math.PI);ctx.fill();
+      ctx.fillStyle='#8b96ad';ctx.font='7.5px ui-monospace,monospace';ctx.fillText(L[0],lx2,ly2+12);});
+    // 하단 상태줄
+    ctx.font='8.5px ui-monospace,monospace';ctx.textAlign='left';
+    let st='대기 중 — 로봇 접근';
+    if(sim.done&&sim.ok){
+      st=latch<1?'도킹 래치 체결 중':
+        (mp>=1?'임무 완료 — 정상화':
+         goal==='refuel'?(mp<0.08?'단열재 절개 중':mp<0.14?'안전선 절단 중':mp<0.2?'밸브 캡 제거 중':mp<0.26?'노즐 결합 · GHe 가압':'압력차 이송 · 무배기 충전 '+Math.round(clamp((mp-0.26)/0.69,0,1)*100)+'%'):
+         goal==='battery'?(mp<0.45?'노후 배터리 분리 중':'새 배터리 장착 중'):
+         goal==='repair'?'열제어 패널 수리 중':
+         goal==='boost'?'견인 가속 — 고도 상승':'역추진 — 궤도 이탈 중');
+    }else if(sim.done){st='통신 두절 · 도킹 실패';}
+    ctx.fillStyle=sim.done&&!sim.ok?'#f2555a':'#38e1c6';
+    ctx.fillText('▸ '+st,px4+7,py4+ph4-8);
+    ctx.textAlign='center';
+  }
+}
+function drawDockAll(){drawArena($('c-dock'),userDock,true);drawFPV($('c-fpv'),userDock);drawArena($('c-dock-good'),cmpGood,false);drawArena($('c-dock-bad'),cmpBad,false);updateDockStatus();}
 function statusPill(sim){if(!sim.done)return sim.t>0?'<span style="color:var(--warn)">진행 중</span>':'<span style="color:var(--muted)">대기</span>';return sim.ok?'<span style="color:var(--good)">성공</span>':'<span style="color:var(--crit)">실패</span>';}
 function updateDockStatus(){$('dock-status').innerHTML=statusPill(userDock);$('good-status').innerHTML=statusPill(cmpGood);$('bad-status').innerHTML=statusPill(cmpBad);
-  const s=userDock;$('dock-read').innerHTML=rd([['거리',s.x.toFixed(1)+' m'],['접근속도',(Math.abs(s.vx)*100).toFixed(1)+' cm/s'],['측면오차',s.y.toFixed(2)+' m'],['자세오차',(s.theta/DEG).toFixed(1)+'°'],['잔여연료',s.fuel.toFixed(2)+' kg'],['결과',s.done?(s.ok?'성공':'실패'):'—']]);
+  const s=userDock;const vrel=Math.sqrt(s.vx*s.vx+s.vy*s.vy+s.vz*s.vz),lat=Math.sqrt(s.y*s.y+s.z*s.z),att=Math.sqrt(s.py*s.py+s.yw*s.yw)/DEG;
+  $('dock-read').innerHTML=rd([['거리',s.x.toFixed(1)+' m'],['상대속도',(vrel*100).toFixed(1)+' cm/s'],['측면오차',lat.toFixed(2)+' m'],['자세오차',att.toFixed(1)+'°'],['잔여연료',s.fuel.toFixed(2)+' kg'],['결과',s.done?(s.ok?'성공':'실패'):'—']]);
 }
 
 /* ═══ 애니메이션 루프 ═══ */
@@ -646,7 +1296,7 @@ function loop(){
 }
 
 /* ═══ 탭 ═══ */
-document.querySelectorAll('.tabs button').forEach(b=>{b.addEventListener('click',()=>{document.querySelectorAll('.tabs button').forEach(x=>x.setAttribute('aria-selected','false'));b.setAttribute('aria-selected','true');activeTab=b.dataset.tab;['orbit','battery','path','dock','refuel','life'].forEach(t=>$('tab-'+t).hidden=activeTab!==t);drawActive();});});
+document.querySelectorAll('.tabs button').forEach(b=>{b.addEventListener('click',()=>{document.querySelectorAll('.tabs button').forEach(x=>x.setAttribute('aria-selected','false'));b.setAttribute('aria-selected','true');activeTab=b.dataset.tab;['intro','orbit','battery','path','dock','refuel','life'].forEach(t=>$('tab-'+t).hidden=activeTab!==t);drawActive();});});
 
 /* ═══ 입력 이벤트 ═══ */
 const DOCK_KEYS=['dockRange','dockOffset','dockSpeed','sensorNoise','autoGain','dockFuel'];
@@ -660,7 +1310,20 @@ $('chip-good').addEventListener('click',()=>{Object.entries(GOOD_CFG).forEach(([
 $('chip-bad').addEventListener('click',()=>{Object.entries(BAD_CFG).forEach(([k,v])=>{const m={x0:'dockRange',y0:'dockOffset',v0:'dockSpeed',noise:'sensorNoise',gain:'autoGain',fuel0:'dockFuel'};inputs[m[k]].value=v;});recompute();resetDocks();});
 $('dock-play').addEventListener('click',()=>{if(userDock.done&&cmpGood.done&&cmpBad.done)resetDocks();dockRunning=true;});
 $('dock-reset').addEventListener('click',resetDocks);
+$('view-reset').addEventListener('click',()=>{camUser=false;camEl=20*DEG;camZoom=1;if(!dockRunning)drawDockAll();});
+$('dockGoal').addEventListener('input',()=>{if(!dockRunning)drawDockAll();});
 window.addEventListener('resize',drawActive);
+
+/* ═══ 도킹 3D 마우스/터치 드래그 회전 ═══ */
+['c-dock','c-dock-good','c-dock-bad'].forEach(id=>{
+  const cv=$(id); cv.style.cursor='grab'; cv.style.touchAction='none';
+  cv.addEventListener('pointerdown',e=>{dragging=true;camUser=true;lastPX=e.clientX;lastPY=e.clientY;cv.setPointerCapture(e.pointerId);cv.style.cursor='grabbing';});
+  cv.addEventListener('pointermove',e=>{if(!dragging)return;camAz+=(e.clientX-lastPX)*0.008;camEl=clamp(camEl+(e.clientY-lastPY)*0.006,-75*DEG,75*DEG);lastPX=e.clientX;lastPY=e.clientY;if(!dockRunning)drawDockAll();});
+  const up=e=>{dragging=false;cv.style.cursor='grab';};
+  cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
+  cv.addEventListener('dblclick',()=>{camUser=false;camEl=20*DEG;camZoom=1;if(!dockRunning)drawDockAll();});
+  cv.addEventListener('wheel',e=>{e.preventDefault();camZoom=clamp(camZoom*(e.deltaY<0?1.12:0.89),0.45,3.2);if(!dockRunning)drawDockAll();},{passive:false});
+});
 
 recompute();
 requestAnimationFrame(loop);
