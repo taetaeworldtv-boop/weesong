@@ -1,0 +1,667 @@
+<title>궤도 미션 콘트롤 — 위성 예측 · 연료 · 자율 도킹 로봇 시뮬레이터</title>
+<style>
+  :root{
+    --bg:#0a0e1a; --bg2:#070a14;
+    --panel:#121826; --panel2:#0f1420;
+    --line:#222c42; --line2:#1a2236;
+    --ink:#e8edf7; --muted:#8b96ad; --faint:#5a6580;
+    --cyan:#38e1c6; --cyan-dim:#1c6b5f;
+    --amber:#f5a742; --blue:#5aa0ff; --purple:#9b8cff;
+    --good:#4ade80; --warn:#f5a742; --crit:#f2555a;
+    --mono:ui-monospace,"Cascadia Code","SF Mono",Consolas,"Liberation Mono",monospace;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:
+      radial-gradient(1200px 800px at 80% -10%, #10203a 0%, transparent 55%),
+      radial-gradient(900px 700px at -5% 110%, #17122c 0%, transparent 50%),
+      var(--bg);
+    color:var(--ink); font-family:var(--sans); font-size:15px; line-height:1.5; min-height:100vh;
+  }
+  body::before{
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:0; opacity:.5;
+    background-image:
+      radial-gradient(1px 1px at 20% 30%, #fff 50%, transparent),
+      radial-gradient(1px 1px at 70% 60%, #cfe 50%, transparent),
+      radial-gradient(1px 1px at 40% 80%, #fff 50%, transparent),
+      radial-gradient(1px 1px at 88% 22%, #bcd 50%, transparent),
+      radial-gradient(1px 1px at 55% 12%, #fff 50%, transparent),
+      radial-gradient(1px 1px at 12% 65%, #ace 50%, transparent);
+    background-repeat:no-repeat;
+  }
+  .wrap{position:relative; z-index:1; max-width:1320px; margin:0 auto; padding:22px clamp(14px,3vw,32px) 60px}
+
+  header.app{display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; margin-bottom:18px}
+  header.app .mark{font-family:var(--mono); font-weight:700; letter-spacing:.14em; font-size:12px; color:var(--cyan); border:1px solid var(--cyan-dim); border-radius:999px; padding:4px 11px; text-transform:uppercase; white-space:nowrap}
+  header.app h1{font-size:clamp(19px,2.4vw,26px); margin:0; font-weight:650; letter-spacing:-.01em; text-wrap:balance}
+  header.app p{margin:0; color:var(--muted); font-size:13px}
+
+  .strip{display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:18px}
+  .tile{background:linear-gradient(180deg,var(--panel),var(--panel2)); border:1px solid var(--line); border-radius:14px; padding:13px 15px; overflow:hidden}
+  .tile .k{font-size:11px; letter-spacing:.09em; text-transform:uppercase; color:var(--muted)}
+  .tile .v{font-family:var(--mono); font-size:clamp(18px,2.4vw,25px); font-variant-numeric:tabular-nums; margin-top:5px; font-weight:600}
+  .tile .u{color:var(--faint); font-size:12px; font-weight:400}
+  .tile.accent{border-color:var(--cyan-dim)} .tile.accent .v{color:var(--cyan)}
+
+  .pill{display:inline-flex; align-items:center; gap:6px; font-family:var(--mono); font-size:13px; font-weight:600; padding:3px 10px; border-radius:999px}
+  .pill::before{content:""; width:8px; height:8px; border-radius:50%; background:currentColor}
+  .pill.go{color:var(--good); background:color-mix(in srgb,var(--good) 14%, transparent)}
+  .pill.no{color:var(--crit); background:color-mix(in srgb,var(--crit) 14%, transparent)}
+  .pill.mid{color:var(--warn); background:color-mix(in srgb,var(--warn) 14%, transparent)}
+
+  .grid{display:grid; grid-template-columns:308px 1fr; gap:18px; align-items:start}
+  .console{background:linear-gradient(180deg,var(--panel),var(--panel2)); border:1px solid var(--line); border-radius:16px; padding:4px 16px 14px; position:sticky; top:16px; max-height:calc(100vh - 32px); overflow-y:auto}
+  .console::-webkit-scrollbar{width:8px} .console::-webkit-scrollbar-thumb{background:var(--line); border-radius:8px}
+
+  details.grp{border-top:1px solid var(--line2)}
+  details.grp:first-of-type{border-top:0}
+  details.grp>summary{list-style:none; cursor:pointer; padding:13px 0 11px; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--cyan); font-weight:700; display:flex; align-items:center; gap:8px}
+  details.grp>summary::-webkit-details-marker{display:none}
+  details.grp>summary .dot{width:6px; height:6px; border-radius:50%; background:var(--cyan); box-shadow:0 0 8px var(--cyan)}
+  details.grp>summary::after{content:'▸'; margin-left:auto; transition:.2s; color:var(--faint)}
+  details.grp[open]>summary::after{transform:rotate(90deg)}
+
+  .field{margin-bottom:13px}
+  .field .row{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px}
+  .field label{font-size:12.5px; color:var(--ink)}
+  .field .num{font-family:var(--mono); font-size:13px; font-variant-numeric:tabular-nums; color:var(--cyan)}
+  input[type=range]{-webkit-appearance:none; appearance:none; width:100%; height:4px; border-radius:4px; background:var(--line); outline:none}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:15px; height:15px; border-radius:50%; background:var(--cyan); border:2px solid var(--bg); cursor:pointer; box-shadow:0 0 6px color-mix(in srgb,var(--cyan) 60%,transparent)}
+  input[type=range]::-moz-range-thumb{width:15px; height:15px; border-radius:50%; background:var(--cyan); border:2px solid var(--bg); cursor:pointer}
+  input[type=range]:focus-visible{box-shadow:0 0 0 3px color-mix(in srgb,var(--cyan) 35%,transparent)}
+  select{width:100%; background:var(--panel2); color:var(--ink); border:1px solid var(--line); border-radius:9px; padding:8px 10px; font-family:var(--sans); font-size:13.5px; cursor:pointer}
+  select:focus-visible{outline:none; border-color:var(--cyan)}
+
+  .btn{background:var(--panel2); color:var(--ink); border:1px solid var(--line); border-radius:9px; padding:9px 16px; font-family:var(--sans); font-size:13.5px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px}
+  .btn:hover{border-color:var(--cyan); color:var(--cyan)}
+  .btn.primary{background:color-mix(in srgb,var(--cyan) 18%,transparent); border-color:var(--cyan-dim); color:var(--cyan)}
+  .btnrow{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:12px}
+  .chiprow{display:flex; gap:8px; flex-wrap:wrap; margin:2px 0 12px}
+  .chip{background:var(--panel2); border:1px solid var(--line); border-radius:999px; padding:6px 12px; font-size:12px; color:var(--muted); cursor:pointer}
+  .chip.good:hover{color:var(--good); border-color:var(--good)}
+  .chip.bad:hover{color:var(--crit); border-color:var(--crit)}
+
+  .viewport{display:flex; flex-direction:column; gap:16px}
+  .tabs{display:flex; gap:6px; flex-wrap:wrap; background:var(--panel2); border:1px solid var(--line); border-radius:12px; padding:5px}
+  .tabs button{flex:1 1 auto; min-width:96px; background:transparent; border:0; color:var(--muted); font-family:var(--sans); font-size:13px; font-weight:600; padding:9px 8px; border-radius:8px; cursor:pointer; transition:.15s}
+  .tabs button:hover{color:var(--ink)}
+  .tabs button[aria-selected=true]{background:color-mix(in srgb,var(--cyan) 16%,transparent); color:var(--cyan)}
+  .tabs button:focus-visible{outline:2px solid var(--cyan); outline-offset:2px}
+
+  .panel{background:linear-gradient(180deg,var(--panel),var(--panel2)); border:1px solid var(--line); border-radius:16px; padding:16px}
+  .panel[hidden]{display:none}
+  .panel h2{margin:0 0 3px; font-size:16px; font-weight:640}
+  .panel h4{margin:20px 0 9px; font-size:12px; color:var(--cyan); text-transform:uppercase; letter-spacing:.09em; font-weight:700}
+  .panel .sub{margin:0 0 14px; color:var(--muted); font-size:12.5px; line-height:1.6}
+
+  .canvas-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px}
+  .dual{display:grid; grid-template-columns:1fr 1fr; gap:14px}
+  .cbox{background:var(--bg2); border:1px solid var(--line2); border-radius:12px; padding:10px; position:relative}
+  .cbox .cap{font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); margin-bottom:8px; display:flex; justify-content:space-between; gap:8px}
+  canvas{display:block; width:100%; border-radius:8px}
+
+  table.tel{width:100%; border-collapse:collapse; font-size:13px; margin-top:4px}
+  table.tel td{padding:7px 4px; border-bottom:1px solid var(--line2)}
+  table.tel td:first-child{color:var(--muted)}
+  table.tel td:last-child{text-align:right; font-family:var(--mono); font-variant-numeric:tabular-nums}
+  table.tel tr:last-child td{border-bottom:0}
+
+  .readout{display:grid; grid-template-columns:repeat(auto-fit,minmax(112px,1fr)); gap:8px; margin-top:12px}
+  .readout .r{background:var(--bg2); border:1px solid var(--line2); border-radius:9px; padding:8px 10px}
+  .readout .r .k{font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted)}
+  .readout .r .v{font-family:var(--mono); font-size:15px; font-variant-numeric:tabular-nums; margin-top:3px}
+
+  .cmpbars{display:flex; flex-direction:column; gap:11px; margin-top:4px}
+  .cmpbar .lab{display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:5px}
+  .cmpbar .lab .val{font-family:var(--mono)}
+  .cmpbar .track{height:24px; background:var(--bg2); border-radius:6px; overflow:hidden; border:1px solid var(--line2)}
+  .cmpbar .fill{height:100%; display:flex; align-items:center; justify-content:flex-end; padding-right:7px; font-size:11px; font-family:var(--mono); color:#08101d; font-weight:700; white-space:nowrap}
+  .tag{font-size:10px; padding:2px 7px; border-radius:999px; background:color-mix(in srgb,var(--good) 20%,transparent); color:var(--good); margin-left:6px}
+
+  .timeline{display:flex; flex-direction:column; gap:11px; margin:6px 0}
+  .tlrow .lab{font-size:12.5px; margin-bottom:5px; display:flex; justify-content:space-between}
+  .tlrow .track{background:var(--bg2); border:1px solid var(--line2); border-radius:6px; overflow:hidden}
+  .tlrow .bar{height:28px; border-radius:6px; display:flex; align-items:center; padding:0 10px; font-family:var(--mono); font-size:12px; color:#08101d; font-weight:700}
+
+  .legend{display:flex; gap:16px; flex-wrap:wrap; font-size:12px; color:var(--muted); margin-top:10px}
+  .legend i{display:inline-block; width:12px; height:12px; border-radius:3px; margin-right:5px; vertical-align:-1px}
+
+  footer{margin-top:26px; color:var(--faint); font-size:12px; line-height:1.7}
+  footer code{font-family:var(--mono); color:var(--muted)}
+
+  @media (max-width:920px){
+    .grid{grid-template-columns:1fr}
+    .console{position:static; max-height:none}
+    .strip{grid-template-columns:repeat(2,1fr)}
+    .canvas-grid,.dual{grid-template-columns:1fr}
+  }
+  @media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="app">
+    <span class="mark">◎ Orbital Mission Control</span>
+    <div>
+      <h1>위성 궤도·연료 예측 및 자율 도킹 재급유 로봇 시뮬레이터</h1>
+      <p>궤도역학 · 배터리/연료 모델 · 경로 최적화 · 정밀 도킹 · AI 재급유 결정 · 수명연장/우주쓰레기 분석</p>
+    </div>
+  </header>
+
+  <div class="strip">
+    <div class="tile accent"><div class="k">궤도 주기</div><div class="v" id="s-period">— <span class="u">min</span></div></div>
+    <div class="tile"><div class="k">무급유 수명</div><div class="v" id="s-life-no">— <span class="u">년</span></div></div>
+    <div class="tile"><div class="k">재급유 후 수명</div><div class="v" id="s-life-re">— <span class="u">년</span></div></div>
+    <div class="tile"><div class="k">도킹 성공률</div><div class="v" id="s-dock">— <span class="u">%</span></div></div>
+  </div>
+
+  <div class="grid">
+    <aside class="console">
+      <details class="grp" open>
+        <summary><span class="dot"></span>위성 궤도</summary>
+        <div class="field"><div class="row"><label for="preset">프리셋</label></div>
+          <select id="preset">
+            <option value="iss">ISS / 저궤도 (LEO)</option>
+            <option value="sso">태양동기궤도 (SSO)</option>
+            <option value="meo">GPS / 중궤도 (MEO)</option>
+            <option value="geo">정지궤도 (GEO)</option>
+            <option value="custom">사용자 지정</option>
+          </select></div>
+        <div class="field"><div class="row"><label for="alt">근지점 고도</label><span class="num" id="alt-v"></span></div><input type="range" id="alt" min="300" max="36000" step="10" value="420"></div>
+        <div class="field"><div class="row"><label for="ecc">이심률 e</label><span class="num" id="ecc-v"></span></div><input type="range" id="ecc" min="0" max="0.3" step="0.001" value="0.001"></div>
+        <div class="field"><div class="row"><label for="inc">궤도경사 i</label><span class="num" id="inc-v"></span></div><input type="range" id="inc" min="0" max="120" step="0.5" value="51.6"></div>
+        <div class="field"><div class="row"><label for="raan">승교점적경 Ω</label><span class="num" id="raan-v"></span></div><input type="range" id="raan" min="0" max="360" step="1" value="60"></div>
+      </details>
+
+      <details class="grp" open>
+        <summary><span class="dot"></span>위성 연료계</summary>
+        <div class="field"><div class="row"><label for="prop">초기 추진제</label><span class="num" id="prop-v"></span></div><input type="range" id="prop" min="10" max="300" step="1" value="80"></div>
+        <div class="field"><div class="row"><label for="dry">건조 질량</label><span class="num" id="dry-v"></span></div><input type="range" id="dry" min="50" max="2000" step="10" value="400"></div>
+        <div class="field"><div class="row"><label for="isp">추력기 Isp</label><span class="num" id="isp-v"></span></div><input type="range" id="isp" min="150" max="330" step="1" value="220"></div>
+        <div class="field"><div class="row"><label for="area">진행방향 단면적</label><span class="num" id="area-v"></span></div><input type="range" id="area" min="1" max="40" step="0.5" value="3"></div>
+      </details>
+
+      <details class="grp">
+        <summary><span class="dot"></span>전력 · 배터리</summary>
+        <div class="field"><div class="row"><label for="panelArea">태양전지판 면적</label><span class="num" id="panelArea-v"></span></div><input type="range" id="panelArea" min="2" max="60" step="1" value="18"></div>
+        <div class="field"><div class="row"><label for="busPower">버스 소비전력</label><span class="num" id="busPower-v"></span></div><input type="range" id="busPower" min="200" max="6000" step="50" value="1500"></div>
+        <div class="field"><div class="row"><label for="battCap">배터리 용량</label><span class="num" id="battCap-v"></span></div><input type="range" id="battCap" min="500" max="12000" step="100" value="5000"></div>
+      </details>
+
+      <details class="grp">
+        <summary><span class="dot"></span>서비스 로봇 · 경로</summary>
+        <div class="field"><div class="row"><label for="rfuel">로봇 추진제 용량</label><span class="num" id="rfuel-v"></span></div><input type="range" id="rfuel" min="30" max="500" step="5" value="300"></div>
+        <div class="field"><div class="row"><label for="risp">로봇 Isp</label><span class="num" id="risp-v"></span></div><input type="range" id="risp" min="200" max="450" step="1" value="320"></div>
+        <div class="field"><div class="row"><label for="dinc">표적과 경사 차</label><span class="num" id="dinc-v"></span></div><input type="range" id="dinc" min="0" max="20" step="0.1" value="2.5"></div>
+        <div class="field"><div class="row"><label for="phase">랑데부 위상각</label><span class="num" id="phase-v"></span></div><input type="range" id="phase" min="0" max="180" step="1" value="60"></div>
+        <div class="field"><div class="row"><label for="ttime">전이 기간</label><span class="num" id="ttime-v"></span></div><input type="range" id="ttime" min="1" max="45" step="1" value="12"></div>
+        <div class="field"><div class="row"><label for="window">임무 허용기간</label><span class="num" id="window-v"></span></div><input type="range" id="window" min="5" max="60" step="1" value="30"></div>
+      </details>
+
+      <details class="grp">
+        <summary><span class="dot"></span>자율 도킹</summary>
+        <div class="chiprow">
+          <button class="chip good" id="chip-good">권장값(성공)</button>
+          <button class="chip bad" id="chip-bad">위험값(실패)</button>
+        </div>
+        <div class="field"><div class="row"><label for="dockRange">초기 거리</label><span class="num" id="dockRange-v"></span></div><input type="range" id="dockRange" min="20" max="100" step="1" value="50"></div>
+        <div class="field"><div class="row"><label for="dockOffset">초기 측면오차</label><span class="num" id="dockOffset-v"></span></div><input type="range" id="dockOffset" min="0" max="12" step="0.1" value="2.5"></div>
+        <div class="field"><div class="row"><label for="dockSpeed">접근 속도</label><span class="num" id="dockSpeed-v"></span></div><input type="range" id="dockSpeed" min="0.1" max="2" step="0.05" value="0.5"></div>
+        <div class="field"><div class="row"><label for="sensorNoise">센서 잡음</label><span class="num" id="sensorNoise-v"></span></div><input type="range" id="sensorNoise" min="0" max="0.5" step="0.01" value="0.05"></div>
+        <div class="field"><div class="row"><label for="autoGain">자동조종 강도</label><span class="num" id="autoGain-v"></span></div><input type="range" id="autoGain" min="0.3" max="1.6" step="0.05" value="1.05"></div>
+        <div class="field"><div class="row"><label for="dockFuel">도킹 연료(RCS)</label><span class="num" id="dockFuel-v"></span></div><input type="range" id="dockFuel" min="2" max="12" step="0.5" value="6"></div>
+      </details>
+
+      <details class="grp">
+        <summary><span class="dot"></span>함대 · 쓰레기 분석</summary>
+        <div class="field"><div class="row"><label for="fleetN">함대 위성 수</label><span class="num" id="fleetN-v"></span></div><input type="range" id="fleetN" min="1" max="500" step="1" value="60"></div>
+        <div class="field"><div class="row"><label for="horizon">분석 기간</label><span class="num" id="horizon-v"></span></div><input type="range" id="horizon" min="5" max="50" step="1" value="20"></div>
+        <div class="field"><div class="row"><label for="refuelCount">재급유 횟수</label><span class="num" id="refuelCount-v"></span></div><input type="range" id="refuelCount" min="0" max="6" step="1" value="2"></div>
+      </details>
+    </aside>
+
+    <section class="viewport">
+      <div class="tabs" role="tablist">
+        <button role="tab" aria-selected="true"  data-tab="orbit">궤도 &amp; 위치</button>
+        <button role="tab" aria-selected="false" data-tab="battery">배터리·연료</button>
+        <button role="tab" aria-selected="false" data-tab="path">경로 최적화</button>
+        <button role="tab" aria-selected="false" data-tab="dock">자율 도킹</button>
+        <button role="tab" aria-selected="false" data-tab="refuel">AI 재급유</button>
+        <button role="tab" aria-selected="false" data-tab="life">수명·쓰레기</button>
+      </div>
+
+      <div class="panel" id="tab-orbit">
+        <h2>위성 위치 예측</h2>
+        <p class="sub">고전 궤도요소로부터 케플러 전파 → 3D 관성궤도와 지구 자전을 반영한 지상궤적을 실시간 계산합니다.</p>
+        <div class="canvas-grid">
+          <div class="cbox"><div class="cap"><span>3D 관성궤도 (ECI)</span><span>● 위성</span></div><canvas id="c-orbit"></canvas></div>
+          <div class="cbox"><div class="cap"><span>지상궤적 (Ground Track)</span></div><canvas id="c-ground"></canvas></div>
+        </div>
+        <table class="tel" id="orbit-tel"></table>
+      </div>
+
+      <div class="panel" id="tab-battery" hidden>
+        <h2>위성 배터리 · 연료 상태 모델링</h2>
+        <p class="sub">일영(eclipse) 구간의 충·방전 사이클과 누적 사이클에 따른 배터리 용량 열화, 그리고 추진제 소모를 함께 모델링합니다. 전력 수지가 음(−)이면 배터리 방전이 회복되지 않습니다.</p>
+        <div class="canvas-grid">
+          <div class="cbox"><div class="cap"><span>배터리 충전상태 SoC (3주기)</span><span id="batt-dod"></span></div><canvas id="c-batt"></canvas></div>
+          <div class="cbox"><div class="cap"><span>배터리 용량 열화</span><span id="batt-eol-cap"></span></div><canvas id="c-battdeg"></canvas></div>
+        </div>
+        <div class="readout" id="batt-read"></div>
+        <h4>추진제 소모 & station-keeping Δv</h4>
+        <div class="cbox"><div class="cap"><span>연도별 잔여 추진제 &amp; 연간 Δv</span><span id="fuel-eol-cap"></span></div><canvas id="c-fuel"></canvas></div>
+        <div class="legend"><span><i style="background:var(--amber)"></i>잔여 추진제 (kg)</span><span><i style="background:var(--cyan)"></i>연간 Δv (m/s)</span></div>
+      </div>
+
+      <div class="panel" id="tab-path" hidden>
+        <h2>연료 소비 최소화 경로 탐색</h2>
+        <p class="sub">로봇이 대기궤도에서 표적까지 이동하는 전이 전략별 Δv·연료·소요시간을 비교합니다. 면외(경사) 변경은 분할 최적화로 최소화하고, 저추력은 Edelbaum 식으로 계산합니다.</p>
+        <div class="cmpbars" id="path-bars"></div>
+        <div class="readout" id="path-read"></div>
+        <h4>랑데부 실현가능 영역</h4>
+        <div class="cbox"><div class="cap"><span>고도차 × 경사차 실현가능 확률</span><span>★ 현재 표적</span></div><canvas id="c-feas"></canvas></div>
+        <div class="legend"><span><i style="background:#f2555a"></i>불가</span><span><i style="background:#f5a742"></i>경계</span><span><i style="background:#4ade80"></i>가능</span><span>흰 실선 = 판정 경계(50%)</span></div>
+      </div>
+
+      <div class="panel" id="tab-dock" hidden>
+        <h2>정밀 자율 도킹 시뮬레이션</h2>
+        <p class="sub">서비스 로봇이 표적 위성의 도킹 포트로 접근·정렬·접촉하는 과정을 실시간 물리 시뮬레이션합니다. 콘솔의 <b>자율 도킹</b> 값을 바꾸면 궤적과 결과가 달라집니다. 접촉속도·측면오차·자세·연료 조건을 모두 만족해야 <b>연성 도킹 성공</b>입니다.</p>
+        <div class="btnrow">
+          <button class="btn primary" id="dock-play">▶ 재생</button>
+          <button class="btn" id="dock-reset">↺ 리셋</button>
+          <span id="dock-mc" style="margin-left:auto; font-size:12.5px; color:var(--muted)"></span>
+        </div>
+        <div class="cbox"><div class="cap"><span>사용자 시나리오 (콘솔 값 반영)</span><span id="dock-status"></span></div><canvas id="c-dock"></canvas></div>
+        <div class="readout" id="dock-read"></div>
+        <h4>성공 ↔ 실패 비교 (동시 재생)</h4>
+        <div class="dual">
+          <div class="cbox"><div class="cap"><span>안정 접근 · 성공 시나리오</span><span id="good-status"></span></div><canvas id="c-dock-good"></canvas></div>
+          <div class="cbox"><div class="cap"><span>불안정 접근 · 실패 시나리오</span><span id="bad-status"></span></div><canvas id="c-dock-bad"></canvas></div>
+        </div>
+      </div>
+
+      <div class="panel" id="tab-refuel" hidden>
+        <h2>AI 기반 재급유 시점 결정</h2>
+        <p class="sub">다요인 효용 최적화 정책이 잔여연료·안전여유·로봇 도달시간을 종합해 최적 재급유 시점을 산출합니다. 너무 이르면 보충량이 적어 비효율, 너무 늦으면 로봇 도착 전 연료가 안전여유 밑으로 떨어질 위험이 커집니다.</p>
+        <div class="cbox"><div class="cap"><span>연료 잔량 · 효용 곡선 · 권장 재급유 시점</span><span id="refuel-when"></span></div><canvas id="c-refuel"></canvas></div>
+        <div class="readout" id="refuel-read"></div>
+        <p class="sub" id="refuel-note" style="margin-top:12px"></p>
+      </div>
+
+      <div class="panel" id="tab-life" hidden>
+        <h2>수명 연장 &amp; 우주쓰레기 감소 효과</h2>
+        <p class="sub">재급유 서비스가 개별 위성 수명을 얼마나 늘리는지, 그리고 함대 차원에서 우주쓰레기 발생과 충돌위험을 얼마나 줄이는지 정량 비교합니다.</p>
+        <div class="readout" id="life-tiles"></div>
+        <h4>위성 수명 비교</h4>
+        <div class="timeline" id="life-timeline"></div>
+        <h4>우주쓰레기 · 충돌위험 (함대 기준)</h4>
+        <div class="cmpbars" id="debris-bars"></div>
+        <div class="readout" id="debris-tiles"></div>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    <strong style="color:var(--muted)">모델 요약</strong> ·
+    위치 <code>a=(μ/n²)^⅓</code>·케플러 전파·GMST 지상궤적 ·
+    전력 지수대기 일영모델+사이클 열화 ·
+    연료 <code>Δm=m(1−e^(−Δv/Isp·g₀))</code> ·
+    경로 Hohmann 면외분할 최적/바이엘립틱/Edelbaum ·
+    도킹 상대운동 PD 유도+센서잡음+RCS 연료 ·
+    재급유 다요인 효용 최적화. <br>
+    교육·연구 프로토타입용 근사 모델입니다. 실제 운용에는 SGP4·섭동·고정밀 대기/열모델과 6자유도 GNC가 필요합니다.
+  </footer>
+</div>
+
+<script>
+"use strict";
+const MU=398600.4418, RE=6378.137, G0=9.80665, OMEGA_E=7.2921159e-5, YEAR_S=3.15576e7, DEG=Math.PI/180, SOLAR=1361;
+const $=id=>document.getElementById(id);
+const gauss=()=>(Math.random()+Math.random()+Math.random()-1.5)*2;
+const softplus=x=>x>30?x:Math.log(1+Math.exp(x));
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const fmt=(n,d=1)=>isFinite(n)?(+n).toLocaleString(undefined,{minimumFractionDigits:d,maximumFractionDigits:d}):'∞';
+
+const IDS=['preset','alt','ecc','inc','raan','prop','dry','isp','area','panelArea','busPower','battCap',
+  'rfuel','risp','dinc','phase','ttime','window','dockRange','dockOffset','dockSpeed','sensorNoise','autoGain','dockFuel',
+  'fleetN','horizon','refuelCount'];
+const inputs={}; IDS.forEach(id=>inputs[id]=$(id));
+const PRESETS={iss:{alt:420,ecc:0.001,inc:51.6},sso:{alt:700,ecc:0.001,inc:98.2},meo:{alt:20200,ecc:0.002,inc:55},geo:{alt:35786,ecc:0.0002,inc:0.1}};
+
+/* ═══ 궤도 ═══ */
+function keplerE(M,e){M=((M%(2*Math.PI))+2*Math.PI)%(2*Math.PI);let E=e<0.8?M:Math.PI;for(let k=0;k<80;k++){const d=(E-e*Math.sin(E)-M)/(1-e*Math.cos(E));E-=d;if(Math.abs(d)<1e-11)break;}return E;}
+function trueFromMean(M,e){const E=keplerE(M,e);return 2*Math.atan2(Math.sqrt(1+e)*Math.sin(E/2),Math.sqrt(1-e)*Math.cos(E/2));}
+function pfToEci(x,y,inc,raan,argp){const cw=Math.cos(argp),sw=Math.sin(argp);let xw=x*cw-y*sw,yw=x*sw+y*cw;const ci=Math.cos(inc),si=Math.sin(inc);let x1=xw,y1=yw*ci,z1=yw*si;const cO=Math.cos(raan),sO=Math.sin(raan);return{x:x1*cO-y1*sO,y:x1*sO+y1*cO,z:z1};}
+function computeOrbit(){const altP=+inputs.alt.value,e=+inputs.ecc.value,inc=+inputs.inc.value*DEG,raan=+inputs.raan.value*DEG,argp=0;const rp=RE+altP;const a=rp/(1-e);const T=2*Math.PI*Math.sqrt(a**3/MU);const ra=a*(1+e);const p=a*(1-e*e);return{a,e,inc,raan,argp,T,rp,ra,p,altP,altA:ra-RE,meanAlt:a-RE};}
+
+/* ═══ 연료 ═══ */
+function density(alt){return 3.9e-12*Math.exp(-(alt-400)/60);}
+function circSpeed_m(alt){return Math.sqrt(MU*1e9/((RE+alt)*1000));}
+function tsiolkovsky(dv,m,isp){return m*(1-Math.exp(-dv/(isp*G0)));}
+function annualDv(alt,mass,Cd,A){return 0.5*density(alt)*(Cd*A/mass)*circSpeed_m(alt)**2*YEAR_S;}
+function fuelAnalysis(alt){const dry=+inputs.dry.value,prop0=+inputs.prop.value,isp=+inputs.isp.value,A=+inputs.area.value,Cd=2.2,YEARS=15;const rows=[];let rem=prop0,eol=Infinity;for(let y=0;y<=YEARS;y++){const m=dry+Math.max(rem,0);const dv=annualDv(alt,m,Cd,A);const need=tsiolkovsky(dv,m,isp);rows.push({y,dv,rem:Math.max(rem,0)});if(rem<=0&&!isFinite(eol))eol=y;rem-=need;if(rem<=0&&!isFinite(eol))eol=y;}return{rows,eol,prop0,YEARS};}
+
+/* ═══ 배터리/전력 ═══ */
+function eclipseFraction(alt){const r=Math.sqrt(alt*(2*RE+alt))/(RE+alt);return Math.acos(clamp(r,0,1))/Math.PI;}
+function computeBattery(orb){
+  const panelA=+inputs.panelArea.value, Pload=+inputs.busPower.value, capWh=+inputs.battCap.value;
+  const Pgen=panelA*0.29*SOLAR*0.85;
+  const fEcl=eclipseFraction(orb.meanAlt), T=orb.T;
+  const eclH=fEcl*T/3600, sunH=(1-fEcl)*T/3600;
+  const DoD=Math.min(1.5, Pload*eclH/capWh);
+  // SoC 3주기
+  const soc=[]; let s=100; const steps=360, dt=3*T/steps;
+  let minSoc=100;
+  for(let i=0;i<=steps;i++){const t=i*dt;const ph=(t%T)/T;const inSun=Math.abs(ph-0.5)>fEcl/2;const netW=inSun?(Pgen-Pload):(-Pload);s=clamp(s+netW*(dt/3600)/capWh*100,0,100);minSoc=Math.min(minSoc,s);soc.push({t,soc:s});}
+  const blackout=minSoc<=0.5;
+  // 열화
+  const cyc=YEAR_S/T; const K=1.0e-5; const deg=[]; let battEOL=Infinity;
+  for(let y=0;y<=25;y++){const cap=Math.max(50,(1-K*cyc*y*DoD)*100);deg.push({y,cap});if(cap<80&&!isFinite(battEOL))battEOL=y;}
+  return{Pgen,Pload,capWh,fEcl,eclH,sunH,DoD,soc,minSoc,blackout,deg,battEOL,cyc,netAvg:(Pgen*sunH-Pload*T/3600)};
+}
+
+/* ═══ 경로 최적화 ═══ */
+function computePaths(orb){
+  const tAlt=orb.meanAlt, rAlt=Math.max(300,tAlt-200);
+  const r1=RE+rAlt, r2=RE+tAlt, v1=Math.sqrt(MU/r1), v2=Math.sqrt(MU/r2);
+  const di=+inputs.dinc.value*DEG, cap=+inputs.rfuel.value, risp=+inputs.risp.value, wet=500+cap;
+  const at=(r1+r2)/2, vt1=Math.sqrt(MU*(2/r1-1/at)), vt2=Math.sqrt(MU*(2/r2-1/at));
+  // Hohmann 면외 분할 최적
+  let best=1e9,bs=0;
+  for(let sp=0;sp<=1;sp+=0.02){const d1=Math.sqrt(v1*v1+vt1*vt1-2*v1*vt1*Math.cos(sp*di));const d2=Math.sqrt(v2*v2+vt2*vt2-2*v2*vt2*Math.cos((1-sp)*di));if(d1+d2<best){best=d1+d2;bs=sp;}}
+  const dvOpt=best;
+  const dvNaive=Math.abs(vt1-v1)+Math.sqrt(v2*v2+vt2*vt2-2*v2*vt2*Math.cos(di));
+  // 바이엘립틱
+  const rb=Math.max(r2*2.5,r1*3), ab1=(r1+rb)/2, ab2=(r2+rb)/2;
+  const vb1=Math.sqrt(MU*(2/r1-1/ab1)), vba=Math.sqrt(MU*(2/rb-1/ab1)), vbb=Math.sqrt(MU*(2/rb-1/ab2)), vb2=Math.sqrt(MU*(2/r2-1/ab2));
+  const dvBi=Math.abs(vb1-v1)+Math.abs(vbb-vba)+Math.abs(v2-vb2)+2*Math.min(vba,vbb)*Math.sin(di/2);
+  // 저추력 Edelbaum
+  const dvLT=Math.sqrt(v1*v1+v2*v2-2*v1*v2*Math.cos(Math.PI/2*di));
+  const tHoh=Math.PI*Math.sqrt(at**3/MU), tBi=Math.PI*Math.sqrt(ab1**3/MU)+Math.PI*Math.sqrt(ab2**3/MU), tLT=dvLT*1000/5e-4;
+  const fk=dv=>tsiolkovsky(dv*1000,wet,risp);
+  const S=[
+    {name:'Hohmann · 면외분할 최적',dv:dvOpt,t:tHoh,fuel:fk(dvOpt),note:'분할 s*='+bs.toFixed(2)},
+    {name:'Hohmann · 기본',dv:dvNaive,t:tHoh,fuel:fk(dvNaive),note:'원지점 일괄 면외변경'},
+    {name:'바이엘립틱 3임펄스',dv:dvBi,t:tBi,fuel:fk(dvBi),note:'중간 원지점 '+fmt(rb-RE,0)+' km'},
+    {name:'저추력 (Edelbaum)',dv:dvLT,t:tLT,fuel:fk(dvLT),note:'전기추진 연속'},
+  ];
+  let mi=0; S.forEach((s,i)=>{if(s.fuel<S[mi].fuel)mi=i;});
+  return{S,mi,rAlt,tAlt};
+}
+
+/* ═══ 랑데부 실현가능성(히트맵) ═══ */
+function rendezvousDv(rA,tA,diD,phD,tt){const r1=RE+rA,r2=RE+tA,v1=Math.sqrt(MU/r1),v2=Math.sqrt(MU/r2),at=(r1+r2)/2;const vt1=Math.sqrt(MU*(2/r1-1/at)),vt2=Math.sqrt(MU*(2/r2-1/at));const dvH=Math.abs(vt1-v1)+Math.abs(v2-vt2);const dvP=2*Math.min(v1,v2)*Math.sin(diD*DEG/2);const dvPh=(Math.abs(phD)*DEG/(2*Math.PI))*v1*(2/Math.max(tt,0.5))*0.05;return(dvH+dvP+dvPh)*1000;}
+function feasProb(dv,cap,isp,tt,win){const need=tsiolkovsky(dv,500+cap,isp);let p=1/(1+Math.exp(-(cap-need)/(0.12*cap+1e-6)));if(tt>win)p*=0.15;return{p,need};}
+
+/* ═══ AI 재급유 결정 ═══ */
+function computeRefuelAI(fuel){
+  const prop0=fuel.prop0, eol=isFinite(fuel.eol)?fuel.eol:fuel.YEARS;
+  const burn=prop0/Math.max(eol,0.5), reserve=0.15*prop0, lead=(+inputs.ttime.value)/365;
+  const fuelAt=y=>Math.max(0,prop0-burn*y);
+  let best=-1e9,trStar=0.1,curve=[];
+  for(let tr=0.1;tr<=eol;tr+=Math.max(eol/80,0.02)){const topUp=prop0-fuelAt(tr);const arrival=fuelAt(tr+lead);const pen=softplus(reserve-arrival)*4.0;const util=topUp-pen;curve.push({tr,util,fuel:fuelAt(tr)});if(util>best){best=util;trStar=tr;}}
+  const arrivalFuel=fuelAt(trStar+lead), topUp=prop0-fuelAt(trStar), ext=topUp/burn;
+  return{curve,trStar,reserve,arrivalFuel,topUp,burn,prop0,eol,lead,ext};
+}
+
+/* ═══ 수명 & 쓰레기 ═══ */
+function computeLife(fuel,battery){
+  const fuelEOL=isFinite(fuel.eol)?fuel.eol:fuel.YEARS, battEOL=isFinite(battery.battEOL)?battery.battEOL:25;
+  const noRefuel=Math.min(fuelEOL,battEOL), N=+inputs.refuelCount.value;
+  const refuel=Math.min(battEOL,fuelEOL*(N+1)), ext=Math.max(0,refuel-noRefuel);
+  const limiter=refuel>=battEOL-1e-6?'배터리 한계':'연료 한계';
+  return{fuelEOL,battEOL,noRefuel,refuel,ext,N,limiter};
+}
+function computeDebris(life){
+  const M=+inputs.fleetN.value, T=+inputs.horizon.value;
+  const retNo=M*T/Math.max(life.noRefuel,0.5), retServ=M*T/Math.max(life.refuel,0.5);
+  const debNo=retNo*0.6, debServ=retServ*0.1;
+  const avoided=Math.max(0,debNo-debServ), launches=Math.max(0,retNo-retServ);
+  const riskRed=debNo>0?(1-(debServ*debServ)/(debNo*debNo))*100:0;
+  const massAvoided=avoided*(+inputs.dry.value)/1000;
+  return{M,T,retNo,retServ,debNo,debServ,avoided,launches,riskRed,massAvoided};
+}
+
+/* ═══ 도킹 시뮬레이션 엔진 ═══ */
+const A_MAX=0.05,KPX=1.2,KPY=0.8,KDY=2.0,KTH=0.8,KDTH=1.8,V_CONTACT=0.10,PORT_R=0.5,ALIGN_MAX=8,C_FUEL=0.12,TMAX=300,SLOPE=0.05;
+function makeDock(cfg){
+  const s={cfg,done:false,ok:false,reason:'',thrust:0,metrics:{}};
+  s.reset=function(){this.x=cfg.x0;this.y=cfg.y0;this.vx=-cfg.v0;this.vy=0;this.theta=0;this.omega=0;this.fuel=cfg.fuel0;this.t=0;this.trail=[];this.done=false;this.ok=false;this.reason='';this.thrust=0;};
+  s.finish=function(ok,r){this.done=true;this.ok=ok;this.reason=r;this.x=Math.max(this.x,0);};
+  s.contact=function(){const cs=Math.abs(this.vx),lat=Math.abs(this.y),al=Math.abs(this.theta)/DEG;this.metrics={cs,lat,al,fuel:this.fuel};if(this.fuel<=0.001)this.finish(false,'연료 소진 · 제어 상실');else if(cs>V_CONTACT)this.finish(false,'접촉속도 초과 ('+(cs*100).toFixed(1)+' cm/s) · 충돌');else if(lat>PORT_R)this.finish(false,'포트 이탈 (측면 '+lat.toFixed(2)+' m)');else if(al>ALIGN_MAX)this.finish(false,'자세 정렬 실패 ('+al.toFixed(1)+'°)');else this.finish(true,'연성 도킹 성공');};
+  s.step=function(dt){
+    if(this.done)return;this.t+=dt;const c=this.cfg;
+    const ym=this.y+c.noise*gauss(),vym=this.vy+c.noise*0.3*gauss(),xm=Math.max(this.x+c.noise*0.5*gauss(),0.001),vxm=this.vx+c.noise*0.2*gauss();
+    const vdes=Math.min(c.v0,0.04*xm+0.03);
+    let ax=KPX*c.gain*(-vdes-vxm), ay=c.gain*(-KPY*ym-KDY*vym);
+    const am=Math.hypot(ax,ay); if(am>A_MAX){ax*=A_MAX/am;ay*=A_MAX/am;}
+    let tq=-KTH*c.gain*this.theta-KDTH*c.gain*this.omega;
+    if(this.fuel<=0){ax=0;ay=0;tq=0;}
+    this.thrust=Math.hypot(ax,ay);
+    this.fuel=Math.max(0,this.fuel-C_FUEL*(Math.abs(ax)+Math.abs(ay))*dt);
+    const dA=0.12*c.noise; ax+=dA*gauss(); ay+=dA*gauss(); const dT=0.14*c.noise*gauss();
+    this.vx+=ax*dt;this.vy+=ay*dt;this.x+=this.vx*dt;this.y+=this.vy*dt;this.omega+=(tq+dT)*dt;this.theta+=this.omega*dt;
+    if(Math.floor(this.t/0.32)>this.trail.length) this.trail.push({x:this.x,y:this.y});
+    if(this.x<=0)this.contact();
+    else if(this.t>TMAX)this.finish(false,'시간 초과 · 접근 실패');
+    else if(this.x>c.x0*1.7)this.finish(false,'발산 · 접근 실패');
+    else if(Math.abs(this.y)>Math.max(Math.abs(c.y0)*3,15))this.finish(false,'측면 이탈 · 접근 실패');
+  };
+  s.reset(); return s;
+}
+function runDockMC(cfg,N){let ok=0;for(let i=0;i<N;i++){const d=makeDock(cfg);let it=0;while(!d.done&&it<4000){d.step(0.08);it++;}if(d.ok)ok++;}return ok/N;}
+function dockCfg(){return{x0:+inputs.dockRange.value,y0:+inputs.dockOffset.value,v0:+inputs.dockSpeed.value,noise:+inputs.sensorNoise.value,gain:+inputs.autoGain.value,fuel0:+inputs.dockFuel.value};}
+const GOOD_CFG={x0:50,y0:2.5,v0:0.5,noise:0.03,gain:1.05,fuel0:6};
+const BAD_CFG={x0:50,y0:6,v0:1.6,noise:0.38,gain:0.45,fuel0:3};
+let userDock=makeDock(dockCfg()), cmpGood=makeDock(GOOD_CFG), cmpBad=makeDock(BAD_CFG), dockRunning=false;
+function resetDocks(){userDock=makeDock(dockCfg());cmpGood=makeDock(GOOD_CFG);cmpBad=makeDock(BAD_CFG);dockRunning=false;drawDockAll();updateDockStatus();}
+
+/* ═══ 상태 & 재계산 ═══ */
+let state={}, activeTab='orbit';
+const LABELS={alt:v=>(+v).toLocaleString()+' km',ecc:v=>(+v).toFixed(3),inc:v=>(+v).toFixed(1)+'°',raan:v=>(+v).toFixed(0)+'°',prop:v=>v+' kg',dry:v=>v+' kg',isp:v=>v+' s',area:v=>v+' m²',panelArea:v=>v+' m²',busPower:v=>v+' W',battCap:v=>v+' Wh',rfuel:v=>v+' kg',risp:v=>v+' s',dinc:v=>(+v).toFixed(1)+'°',phase:v=>v+'°',ttime:v=>v+' 일',window:v=>v+' 일',dockRange:v=>v+' m',dockOffset:v=>(+v).toFixed(1)+' m',dockSpeed:v=>(+v).toFixed(2)+' m/s',sensorNoise:v=>(+v).toFixed(2),autoGain:v=>(+v).toFixed(2),dockFuel:v=>(+v).toFixed(1)+' kg',fleetN:v=>v+' 기',horizon:v=>v+' 년',refuelCount:v=>v+' 회'};
+function recompute(){
+  IDS.forEach(id=>{if(LABELS[id]&&$(id+'-v'))$(id+'-v').textContent=LABELS[id](inputs[id].value);});
+  const orb=computeOrbit();
+  const fuel=fuelAnalysis(orb.meanAlt);
+  const battery=computeBattery(orb);
+  const paths=computePaths(orb);
+  const refuelAI=computeRefuelAI(fuel);
+  const life=computeLife(fuel,battery);
+  const debris=computeDebris(life);
+  const dv=rendezvousDv(paths.rAlt,orb.meanAlt,+inputs.dinc.value,+inputs.phase.value,+inputs.ttime.value);
+  const feas=feasProb(dv,+inputs.rfuel.value,+inputs.risp.value,+inputs.ttime.value,+inputs.window.value);
+  const dockMC=runDockMC(dockCfg(),24);
+  state={orb,fuel,battery,paths,refuelAI,life,debris,robot:{dv,...feas,tAlt:orb.meanAlt,rAlt:paths.rAlt,dinc:+inputs.dinc.value,phase:+inputs.phase.value,ttime:+inputs.ttime.value,cap:+inputs.rfuel.value,windowD:+inputs.window.value},dockMC};
+  updateSummary(); updateOrbitTel(); updateFuelCap(); updateBatteryRead(); updatePaths(); updateRefuel(); updateLife(); updateDockMC();
+  drawActive();
+}
+function drawActive(){
+  if(activeTab==='orbit'){drawGround();drawOrbit3D();}
+  else if(activeTab==='battery'){drawBattery();drawBatteryDeg();drawFuel();}
+  else if(activeTab==='path'){drawFeas();}
+  else if(activeTab==='dock'){drawDockAll();}
+  else if(activeTab==='refuel'){drawRefuel();}
+}
+
+function updateSummary(){const {orb,life,dockMC}=state;
+  $('s-period').innerHTML=fmt(orb.T/60,1)+' <span class="u">min</span>';
+  $('s-life-no').innerHTML=fmt(life.noRefuel,0)+' <span class="u">년</span>';
+  $('s-life-re').innerHTML=fmt(life.refuel,0)+' <span class="u">년</span>';
+  const c=dockMC>=0.6?'var(--good)':dockMC>=0.4?'var(--warn)':'var(--crit)';
+  $('s-dock').innerHTML='<span style="color:'+c+'">'+(dockMC*100).toFixed(0)+'</span> <span class="u">%</span>';
+}
+function updateOrbitTel(){const o=state.orb;$('orbit-tel').innerHTML=[['장반경 a',fmt(o.a,1)+' km'],['궤도 주기',fmt(o.T/60,2)+' min'],['근지점 / 원지점 고도',fmt(o.altP,1)+' / '+fmt(o.altA,1)+' km'],['이심률 e',fmt(o.e,4)],['궤도경사 i',fmt(o.inc/DEG,2)+'°'],['평균 궤도속도',fmt(circSpeed_m(o.meanAlt)/1000,3)+' km/s']].map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('');}
+function updateFuelCap(){const f=state.fuel;$('fuel-eol-cap').textContent=isFinite(f.eol)?'연료 EOL ≈ '+f.eol+'년':'연료수명 > '+f.YEARS+'년';}
+function updateBatteryRead(){const b=state.battery;
+  $('batt-dod').textContent='DoD '+(b.DoD*100).toFixed(0)+'%';
+  $('batt-eol-cap').textContent=isFinite(b.battEOL)?'80% EOL ≈ '+b.battEOL+'년':'수명 > 15년';
+  $('batt-read').innerHTML=rd([['발전 (일조)',fmt(b.Pgen,0)+' W'],['소비',fmt(b.Pload,0)+' W'],['전력수지',(b.Pgen-b.Pload>=0?'+':'')+fmt(b.Pgen-b.Pload,0)+' W'],['일영 비율',(b.fEcl*100).toFixed(1)+'%'],['방전심도 DoD',(b.DoD*100).toFixed(0)+'%'],['최저 SoC',b.minSoc.toFixed(0)+'%'],['배터리 EOL',isFinite(b.battEOL)?b.battEOL+' 년':'>15 년'],['상태',b.blackout?'⚠ 전력부족':'정상']]);
+}
+function rd(arr){return arr.map(x=>`<div class="r"><div class="k">${x[0]}</div><div class="v">${x[1]}</div></div>`).join('');}
+
+function updatePaths(){const p=state.paths;const maxDv=Math.max(...p.S.map(s=>s.dv));
+  $('path-bars').innerHTML=p.S.map((s,i)=>{const w=(s.dv/maxDv*100).toFixed(1);const best=i===p.mi;const col=best?'var(--good)':'var(--cyan)';return `<div class="cmpbar"><div class="lab"><span>${s.name}${best?'<span class="tag">최소 연료</span>':''}</span><span class="val">${fmt(s.dv*1000,0)} m/s · ${fmt(s.fuel,1)} kg</span></div><div class="track"><div class="fill" style="width:${w}%;background:${col}">${fmt(s.dv*1000,0)}</div></div></div>`;}).join('');
+  const best=p.S[p.mi];
+  $('path-read').innerHTML=rd([['로봇 대기궤도',fmt(p.rAlt,0)+' km'],['표적 고도',fmt(p.tAlt,0)+' km'],['최소연료 전략',best.name.split('·')[0]],['소요 Δv',fmt(best.dv*1000,0)+' m/s'],['필요 연료',fmt(best.fuel,1)+' kg'],['소요 시간',best.t/86400>2?fmt(best.t/86400,1)+' 일':fmt(best.t/3600,1)+' h']]);
+}
+function updateRefuel(){const a=state.refuelAI;
+  $('refuel-when').textContent='권장 '+a.trStar.toFixed(1)+'년차';
+  $('refuel-read').innerHTML=rd([['권장 재급유 시점',a.trStar.toFixed(1)+' 년'],['보충량',fmt(a.topUp,1)+' kg'],['도착시 잔여연료',fmt(a.arrivalFuel,1)+' kg'],['안전여유 기준',fmt(a.reserve,1)+' kg'],['로봇 도달시간',(a.lead*365).toFixed(0)+' 일'],['수명 연장',fmt(a.ext,1)+' 년']]);
+  const safe=a.arrivalFuel>=a.reserve;
+  $('refuel-note').innerHTML=`정책 판정: 잔여연료가 안전여유(<b>${fmt(a.reserve,1)} kg</b>)에 도달하기 전, 로봇 도달시간(<b>${(a.lead*365).toFixed(0)}일</b>)을 고려하면 <b style="color:var(--cyan)">${a.trStar.toFixed(1)}년차</b>가 최적입니다. 이때 <b>${fmt(a.topUp,1)} kg</b>을 보충해 약 <b>${fmt(a.ext,1)}년</b> 연장하며, 로봇 도착 시점 잔여연료는 ${fmt(a.arrivalFuel,1)} kg으로 안전여유 ${safe?'<span style="color:var(--good)">이상(안전)</span>':'<span style="color:var(--crit)">미만(위험)</span>'}입니다.`;
+}
+function updateLife(){const l=state.life,d=state.debris;
+  $('life-tiles').innerHTML=rd([['무급유 수명',fmt(l.noRefuel,1)+' 년'],['재급유 후 수명',fmt(l.refuel,1)+' 년'],['수명 연장','+'+fmt(l.ext,1)+' 년'],['제한 요인',l.limiter],['연료 한계',fmt(l.fuelEOL,1)+' 년'],['배터리 한계',isFinite(l.battEOL)?fmt(l.battEOL,1)+' 년':'>15 년']]);
+  const mx=Math.max(l.refuel,l.battEOL,l.fuelEOL,1);
+  $('life-timeline').innerHTML=[
+    {lab:'무급유 (서비스 없음)',v:l.noRefuel,col:'var(--crit)'},
+    {lab:'재급유 '+l.N+'회 서비스',v:l.refuel,col:'var(--good)'},
+  ].map(r=>`<div class="tlrow"><div class="lab"><span>${r.lab}</span><span style="font-family:var(--mono)">${fmt(r.v,1)} 년</span></div><div class="track"><div class="bar" style="width:${Math.max(r.v/mx*100,10)}%;background:${r.col}">${fmt(r.v,1)}년</div></div></div>`).join('');
+  const maxD=Math.max(d.debNo,d.debServ,1);
+  $('debris-bars').innerHTML=[
+    {lab:'서비스 없음 · 누적 우주쓰레기',v:d.debNo,col:'var(--crit)'},
+    {lab:'재급유 서비스 · 누적 우주쓰레기',v:d.debServ,col:'var(--good)'},
+  ].map(r=>`<div class="cmpbar"><div class="lab"><span>${r.lab}</span><span class="val">${fmt(r.v,0)} 개</span></div><div class="track"><div class="fill" style="width:${Math.max(r.v/maxD*100,6)}%;background:${r.col}">${fmt(r.v,0)}</div></div></div>`).join('');
+  $('debris-tiles').innerHTML=rd([['쓰레기 감소',fmt(d.avoided,0)+' 개'],['충돌위험 감소',fmt(d.riskRed,0)+' %'],['발사 절감',fmt(d.launches,0)+' 회'],['회피 질량',fmt(d.massAvoided,1)+' t'],['함대 규모',d.M+' 기'],['분석 기간',d.T+' 년']]);
+}
+function updateDockMC(){const r=state.dockMC;$('dock-mc').innerHTML='몬테카를로 성공률 <b style="color:'+(r>=0.6?'var(--good)':r>=0.4?'var(--warn)':'var(--crit)')+'">'+(r*100).toFixed(0)+'%</b> (24회 시뮬레이션)';}
+
+/* ═══ 캔버스 유틸 ═══ */
+function fitCanvas(cv,aspect){const w=cv.parentElement.clientWidth-20;const h=Math.round(w*aspect);const dpr=Math.min(window.devicePixelRatio||1,2);cv.width=w*dpr;cv.height=h*dpr;cv.style.height=h+'px';const ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);return{ctx,w,h};}
+
+/* ═══ 3D 궤도 ═══ */
+let az=0;
+function drawOrbit3D(){const cv=$('c-orbit');if(!cv.clientWidth)return;const {ctx,w,h}=fitCanvas(cv,0.78);ctx.clearRect(0,0,w,h);const o=state.orb;if(!o)return;const cx=w/2,cy=h/2,el=22*DEG,scale=Math.min(w,h)*0.42/o.ra;
+  const proj=P=>{const ca=Math.cos(az),sa=Math.sin(az);let xa=P.x*ca-P.y*sa,ya=P.x*sa+P.y*ca,za=P.z;const ce=Math.cos(el),se=Math.sin(el);let yb=ya*ce-za*se,zb=ya*se+za*ce;return{sx:cx+xa*scale,sy:cy-zb*scale,depth:yb};};
+  const N=240,pts=[];for(let k=0;k<=N;k++){const nu=k/N*2*Math.PI;const r=o.p/(1+o.e*Math.cos(nu));pts.push(proj(pfToEci(r*Math.cos(nu),r*Math.sin(nu),o.inc,o.raan,o.argp)));}
+  const earthR=RE*scale;
+  ctx.lineWidth=1.4;ctx.strokeStyle='rgba(56,225,198,0.22)';ctx.beginPath();pts.forEach((p,k)=>k?ctx.lineTo(p.sx,p.sy):ctx.moveTo(p.sx,p.sy));ctx.stroke();
+  const g=ctx.createRadialGradient(cx-earthR*0.35,cy-earthR*0.35,earthR*0.1,cx,cy,earthR);g.addColorStop(0,'#3a86c9');g.addColorStop(0.55,'#1c4e7e');g.addColorStop(1,'#0a2138');ctx.beginPath();ctx.arc(cx,cy,earthR,0,2*Math.PI);ctx.fillStyle=g;ctx.fill();
+  ctx.lineWidth=1;ctx.strokeStyle='rgba(120,180,240,0.35)';for(let lat=-60;lat<=60;lat+=30){ctx.beginPath();ctx.ellipse(cx,cy-earthR*Math.sin(lat*DEG)*Math.sin(el),earthR*Math.cos(lat*DEG),earthR*Math.cos(lat*DEG)*Math.cos(el)*0.35,0,0,2*Math.PI);ctx.stroke();}
+  ctx.beginPath();ctx.arc(cx,cy,earthR,0,2*Math.PI);ctx.strokeStyle='rgba(150,200,255,0.5)';ctx.lineWidth=1.2;ctx.stroke();
+  ctx.lineWidth=2;ctx.strokeStyle='rgba(56,225,198,0.95)';ctx.beginPath();let pen=false;pts.forEach(p=>{if(p.depth>=0){if(!pen){ctx.moveTo(p.sx,p.sy);pen=true;}else ctx.lineTo(p.sx,p.sy);}else pen=false;});ctx.stroke();
+  const tN=(performance.now()/1000)%o.T,M=2*Math.PI*tN/o.T,nu=trueFromMean(M,o.e),r=o.p/(1+o.e*Math.cos(nu)),sp=proj(pfToEci(r*Math.cos(nu),r*Math.sin(nu),o.inc,o.raan,o.argp));
+  const beh=sp.depth<0&&Math.hypot(sp.sx-cx,sp.sy-cy)<earthR;ctx.beginPath();ctx.arc(sp.sx,sp.sy,beh?3:5,0,2*Math.PI);ctx.fillStyle=beh?'rgba(245,167,66,0.35)':'#f5a742';ctx.shadowColor='#f5a742';ctx.shadowBlur=beh?0:12;ctx.fill();ctx.shadowBlur=0;
+}
+
+/* ═══ 지상궤적 ═══ */
+function drawGround(){const cv=$('c-ground');if(!cv.clientWidth)return;const {ctx,w,h}=fitCanvas(cv,0.78);ctx.clearRect(0,0,w,h);const o=state.orb;if(!o)return;const X=l=>(l+180)/360*w,Y=la=>(90-la)/180*h;
+  ctx.fillStyle='#08101d';ctx.fillRect(0,0,w,h);ctx.strokeStyle='rgba(90,110,150,0.18)';ctx.lineWidth=1;for(let l=-180;l<=180;l+=30){ctx.beginPath();ctx.moveTo(X(l),0);ctx.lineTo(X(l),h);ctx.stroke();}for(let la=-60;la<=60;la+=30){ctx.beginPath();ctx.moveTo(0,Y(la));ctx.lineTo(w,Y(la));ctx.stroke();}ctx.strokeStyle='rgba(120,150,200,0.35)';ctx.beginPath();ctx.moveTo(0,Y(0));ctx.lineTo(w,Y(0));ctx.stroke();
+  const dur=2.1*o.T,steps=700;ctx.lineWidth=2;ctx.strokeStyle='#38e1c6';let prev=null;ctx.beginPath();
+  for(let k=0;k<=steps;k++){const t=k/steps*dur,M=2*Math.PI*t/o.T,nu=trueFromMean(M,o.e),r=o.p/(1+o.e*Math.cos(nu)),P=pfToEci(r*Math.cos(nu),r*Math.sin(nu),o.inc,o.raan,o.argp),rm=Math.hypot(P.x,P.y,P.z),lat=Math.asin(P.z/rm)/DEG;let lon=(Math.atan2(P.y,P.x)-OMEGA_E*t)/DEG;lon=((lon+180)%360+360)%360-180;const x=X(lon),y=Y(lat);if(prev&&Math.abs(lon-prev)>180){ctx.stroke();ctx.beginPath();ctx.moveTo(x,y);}else k?ctx.lineTo(x,y):ctx.moveTo(x,y);prev=lon;}ctx.stroke();
+  const nu0=trueFromMean(0,o.e),r0=o.p/(1+o.e*Math.cos(nu0)),P0=pfToEci(r0*Math.cos(nu0),r0*Math.sin(nu0),o.inc,o.raan,o.argp);ctx.fillStyle='#4ade80';ctx.beginPath();ctx.arc(X(Math.atan2(P0.y,P0.x)/DEG),Y(Math.asin(P0.z/Math.hypot(P0.x,P0.y,P0.z))/DEG),4,0,2*Math.PI);ctx.fill();
+}
+
+/* ═══ 연료 차트 ═══ */
+function drawFuel(){const cv=$('c-fuel');if(!cv.clientWidth)return;const {ctx,w,h}=fitCanvas(cv,0.42);ctx.clearRect(0,0,w,h);const f=state.fuel;if(!f)return;const pad={l:48,r:52,t:14,b:26},iw=w-pad.l-pad.r,ih=h-pad.t-pad.b,yrs=f.YEARS,maxDv=Math.max(...f.rows.map(r=>r.dv))*1.1||1,X=y=>pad.l+y/yrs*iw,Yf=v=>pad.t+ih-(v/f.prop0)*ih,Yd=v=>pad.t+ih-(v/maxDv)*ih;
+  ctx.strokeStyle='rgba(90,110,150,0.15)';ctx.fillStyle='#8b96ad';ctx.font='11px ui-monospace,monospace';for(let g=0;g<=4;g++){const y=pad.t+ih*g/4;ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+iw,y);ctx.stroke();ctx.textAlign='right';ctx.fillText(Math.round(f.prop0*(1-g/4)),pad.l-6,y+3);}ctx.textAlign='center';for(let y=0;y<=yrs;y+=3)ctx.fillText(y,X(y),h-9);
+  ctx.fillStyle='rgba(56,225,198,0.35)';const bw=iw/(yrs+1)*0.55;f.rows.forEach(r=>{if(r.dv>0){ctx.fillRect(X(r.y)-bw/2,Yd(r.dv),bw,pad.t+ih-Yd(r.dv));}});
+  ctx.beginPath();f.rows.forEach((r,i)=>i?ctx.lineTo(X(r.y),Yf(r.rem)):ctx.moveTo(X(r.y),Yf(r.rem)));ctx.lineTo(X(yrs),Yf(0));ctx.lineTo(X(0),Yf(0));ctx.closePath();const ag=ctx.createLinearGradient(0,pad.t,0,pad.t+ih);ag.addColorStop(0,'rgba(245,167,66,0.35)');ag.addColorStop(1,'rgba(245,167,66,0.02)');ctx.fillStyle=ag;ctx.fill();
+  ctx.beginPath();f.rows.forEach((r,i)=>i?ctx.lineTo(X(r.y),Yf(r.rem)):ctx.moveTo(X(r.y),Yf(r.rem)));ctx.strokeStyle='#f5a742';ctx.lineWidth=2.2;ctx.stroke();
+  if(isFinite(f.eol)){ctx.strokeStyle='rgba(242,85,90,0.8)';ctx.setLineDash([5,4]);ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(X(f.eol),pad.t);ctx.lineTo(X(f.eol),pad.t+ih);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#f2555a';ctx.textAlign='left';ctx.fillText('EOL '+f.eol+'년',X(f.eol)+4,pad.t+11);}
+}
+
+/* ═══ 배터리 SoC ═══ */
+function drawBattery(){const cv=$('c-batt');if(!cv.clientWidth)return;const {ctx,w,h}=fitCanvas(cv,0.78);ctx.clearRect(0,0,w,h);const b=state.battery;if(!b)return;const pad={l:36,r:12,t:12,b:22},iw=w-pad.l-pad.r,ih=h-pad.t-pad.b,tMax=b.soc[b.soc.length-1].t,T=state.orb.T,X=t=>pad.l+t/tMax*iw,Y=s=>pad.t+ih-s/100*ih;
+  ctx.fillStyle='#08101d';ctx.fillRect(pad.l,pad.t,iw,ih);
+  ctx.fillStyle='rgba(90,110,150,0.14)';for(let i=0;i<3;i++){const t0=(i+0.5-b.fEcl/2)*T,t1=(i+0.5+b.fEcl/2)*T;ctx.fillRect(X(t0),pad.t,X(t1)-X(t0),ih);}
+  ctx.strokeStyle='rgba(90,110,150,0.18)';ctx.fillStyle='#8b96ad';ctx.font='11px ui-monospace,monospace';ctx.textAlign='right';[0,20,50,80,100].forEach(s=>{ctx.beginPath();ctx.moveTo(pad.l,Y(s));ctx.lineTo(pad.l+iw,Y(s));ctx.stroke();ctx.fillText(s,pad.l-5,Y(s)+3);});
+  ctx.beginPath();b.soc.forEach((p,i)=>i?ctx.lineTo(X(p.t),Y(p.soc)):ctx.moveTo(X(p.t),Y(p.soc)));ctx.strokeStyle=b.blackout?'#f2555a':'#4ade80';ctx.lineWidth=2;ctx.stroke();
+  ctx.fillStyle='#5a6580';ctx.textAlign='center';ctx.fillText('음영 = 일영(eclipse) 구간',pad.l+iw/2,h-8);
+}
+function drawBatteryDeg(){const cv=$('c-battdeg');if(!cv.clientWidth)return;const {ctx,w,h}=fitCanvas(cv,0.78);ctx.clearRect(0,0,w,h);const b=state.battery;if(!b)return;const pad={l:40,r:12,t:12,b:22},iw=w-pad.l-pad.r,ih=h-pad.t-pad.b,X=y=>pad.l+y/25*iw,Y=c=>pad.t+ih-(c-50)/50*ih;
+  ctx.fillStyle='#08101d';ctx.fillRect(pad.l,pad.t,iw,ih);
+  ctx.strokeStyle='rgba(90,110,150,0.18)';ctx.fillStyle='#8b96ad';ctx.font='11px ui-monospace,monospace';ctx.textAlign='right';[50,60,70,80,90,100].forEach(c=>{ctx.beginPath();ctx.moveTo(pad.l,Y(c));ctx.lineTo(pad.l+iw,Y(c));ctx.stroke();ctx.fillText(c+'%',pad.l-4,Y(c)+3);});
+  ctx.textAlign='center';for(let y=0;y<=25;y+=5)ctx.fillText(y,X(y),h-8);
+  ctx.strokeStyle='rgba(242,85,90,0.6)';ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(pad.l,Y(80));ctx.lineTo(pad.l+iw,Y(80));ctx.stroke();ctx.setLineDash([]);
+  ctx.beginPath();b.deg.forEach((p,i)=>i?ctx.lineTo(X(p.y),Y(p.cap)):ctx.moveTo(X(p.y),Y(p.cap)));ctx.strokeStyle='#5aa0ff';ctx.lineWidth=2.2;ctx.stroke();
+  if(isFinite(b.battEOL)){ctx.strokeStyle='rgba(242,85,90,0.8)';ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(X(b.battEOL),pad.t);ctx.lineTo(X(b.battEOL),pad.t+ih);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#f2555a';ctx.textAlign='left';ctx.fillText('EOL '+b.battEOL+'년',X(b.battEOL)+4,pad.t+11);}
+}
+
+/* ═══ 실현가능 히트맵 ═══ */
+function drawFeas(){const cv=$('c-feas');if(!cv.clientWidth)return;const {ctx,w,h}=fitCanvas(cv,0.5);ctx.clearRect(0,0,w,h);const r=state.robot;if(!r)return;const pad={l:52,r:14,t:14,b:30},iw=w-pad.l-pad.r,ih=h-pad.t-pad.b,dxMin=-300,dxMax=400,dyMin=0,dyMax=20,cols=64,rows=32,cw=iw/cols,ch=ih/rows,risp=+inputs.risp.value,cap=r.cap,win=r.windowD,tt=r.ttime,ph=r.phase,base=r.rAlt;
+  for(let i=0;i<cols;i++){const dx=dxMin+(i+0.5)/cols*(dxMax-dxMin);for(let j=0;j<rows;j++){const dy=dyMin+(j+0.5)/rows*(dyMax-dyMin);const {p}=feasProb(rendezvousDv(base,base+dx,dy,ph,tt),cap,risp,tt,win);let col;if(p<0.5){const t=p/0.5;col=`rgb(242,${85+82*t},${90-24*t})`;}else{const t=(p-0.5)/0.5;col=`rgb(${245-171*t},${167+55*t},${66+62*t})`;}ctx.fillStyle=col;ctx.fillRect(pad.l+i*cw,pad.t+(rows-1-j)*ch,cw+1,ch+1);}}
+  ctx.strokeStyle='rgba(255,255,255,0.9)';ctx.lineWidth=1.6;ctx.beginPath();let st=false;for(let i=0;i<=cols;i++){const dx=dxMin+i/cols*(dxMax-dxMin);let found=null,pP=null,pD=null;for(let j=0;j<=rows;j++){const dy=dyMin+j/rows*(dyMax-dyMin);const p=feasProb(rendezvousDv(base,base+dx,dy,ph,tt),cap,risp,tt,win).p;if(pP!==null&&((pP-0.5)*(p-0.5)<=0)){const t=(0.5-pP)/(p-pP);found=pD+t*(dy-pD);break;}pP=p;pD=dy;}if(found!==null){const x=pad.l+i*cw,y=pad.t+ih-(found-dyMin)/(dyMax-dyMin)*ih;st?ctx.lineTo(x,y):(ctx.moveTo(x,y),st=true);}else st=false;}ctx.stroke();
+  ctx.fillStyle='#8b96ad';ctx.font='11px ui-monospace,monospace';ctx.textAlign='center';for(let v=-300;v<=400;v+=100)ctx.fillText(v,pad.l+(v-dxMin)/(dxMax-dxMin)*iw,h-10);ctx.textAlign='right';for(let v=0;v<=20;v+=5)ctx.fillText(v+'°',pad.l-6,pad.t+ih-(v-dyMin)/(dyMax-dyMin)*ih+3);ctx.textAlign='center';ctx.fillStyle='#5a6580';ctx.fillText('고도차 target−robot (km)',pad.l+iw/2,h-1);
+  const tx=pad.l+((r.tAlt-base)-dxMin)/(dxMax-dxMin)*iw,ty=pad.t+ih-(r.dinc-dyMin)/(dyMax-dyMin)*ih;ctx.fillStyle='#fff';ctx.font='16px sans-serif';ctx.fillText('★',tx,ty+5);
+}
+
+/* ═══ AI 재급유 타임라인 ═══ */
+function drawRefuel(){const cv=$('c-refuel');if(!cv.clientWidth)return;const {ctx,w,h}=fitCanvas(cv,0.44);ctx.clearRect(0,0,w,h);const a=state.refuelAI;if(!a)return;const pad={l:44,r:48,t:14,b:26},iw=w-pad.l-pad.r,ih=h-pad.t-pad.b,X=y=>pad.l+y/a.eol*iw,Yf=v=>pad.t+ih-(v/a.prop0)*ih;
+  ctx.fillStyle='#08101d';ctx.fillRect(pad.l,pad.t,iw,ih);
+  ctx.strokeStyle='rgba(90,110,150,0.15)';ctx.fillStyle='#8b96ad';ctx.font='11px ui-monospace,monospace';ctx.textAlign='right';for(let g=0;g<=4;g++){const y=pad.t+ih*g/4;ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+iw,y);ctx.stroke();ctx.fillText(Math.round(a.prop0*(1-g/4)),pad.l-5,y+3);}ctx.textAlign='center';for(let y=0;y<=a.eol;y+=Math.max(1,Math.round(a.eol/6)))ctx.fillText(y,X(y),h-9);
+  // 권장 시점 밴드
+  ctx.fillStyle='rgba(56,225,198,0.12)';ctx.fillRect(X(a.trStar),pad.t,Math.min(X(a.trStar+a.lead)-X(a.trStar),iw),ih);
+  // 연료 곡선
+  ctx.beginPath();for(let y=0;y<=a.eol;y+=a.eol/60){const v=Math.max(0,a.prop0-a.burn*y);y?ctx.lineTo(X(y),Yf(v)):ctx.moveTo(X(y),Yf(v));}ctx.strokeStyle='#f5a742';ctx.lineWidth=2.2;ctx.stroke();
+  // 안전여유
+  ctx.strokeStyle='rgba(242,85,90,0.7)';ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(pad.l,Yf(a.reserve));ctx.lineTo(pad.l+iw,Yf(a.reserve));ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#f2555a';ctx.textAlign='left';ctx.fillText('안전여유',pad.l+3,Yf(a.reserve)-4);
+  // 효용 곡선(정규화)
+  const uMin=Math.min(...a.curve.map(c=>c.util)),uMax=Math.max(...a.curve.map(c=>c.util)),Yu=u=>pad.t+ih-((u-uMin)/((uMax-uMin)||1))*ih;
+  ctx.beginPath();a.curve.forEach((c,i)=>i?ctx.lineTo(X(c.tr),Yu(c.util)):ctx.moveTo(X(c.tr),Yu(c.util)));ctx.strokeStyle='#38e1c6';ctx.lineWidth=1.6;ctx.setLineDash([3,3]);ctx.stroke();ctx.setLineDash([]);
+  // 권장 마커
+  ctx.strokeStyle='#4ade80';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(X(a.trStar),pad.t);ctx.lineTo(X(a.trStar),pad.t+ih);ctx.stroke();ctx.fillStyle='#4ade80';ctx.textAlign='center';ctx.fillText('권장 '+a.trStar.toFixed(1)+'년',X(a.trStar),pad.t+11);
+  ctx.textAlign='right';ctx.fillStyle='#f5a742';ctx.fillText('연료',pad.l+iw-2,pad.t+11);ctx.fillStyle='#38e1c6';ctx.fillText('효용',pad.l+iw-2,pad.t+24);
+}
+
+/* ═══ 도킹 아레나 ═══ */
+function drawArena(cv,sim,big){if(!cv.clientWidth)return;const {ctx,w,h}=fitCanvas(cv,big?0.5:0.62);ctx.clearRect(0,0,w,h);const c=sim.cfg;
+  const padL=52,padR=14,padT=12,padB=22,xView=c.x0*1.08,yView=Math.max(Math.abs(c.y0)*2.6,8);
+  const SX=x=>padL+x/xView*(w-padL-padR),cyc=padT+(h-padT-padB)/2,SY=y=>cyc-y/yView*((h-padT-padB)/2);
+  ctx.fillStyle='#08101d';ctx.fillRect(0,0,w,h);
+  // 접근 회랑
+  ctx.fillStyle='rgba(74,222,128,0.09)';ctx.beginPath();ctx.moveTo(SX(0),SY(PORT_R));for(let x=0;x<=xView;x+=xView/40)ctx.lineTo(SX(x),SY(PORT_R+SLOPE*x));for(let x=xView;x>=0;x-=xView/40)ctx.lineTo(SX(x),SY(-(PORT_R+SLOPE*x)));ctx.closePath();ctx.fill();
+  ctx.strokeStyle='rgba(90,110,150,0.35)';ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(SX(0),SY(0));ctx.lineTo(SX(xView),SY(0));ctx.stroke();ctx.setLineDash([]);
+  // 표적 위성 + 포트
+  const px=SX(0),py=SY(0);ctx.fillStyle='#2a3550';ctx.fillRect(px-34,py-15,26,30);ctx.fillStyle='#1c4e7e';ctx.fillRect(px-46,py-6,12,12);ctx.fillStyle='#3a86c9';ctx.fillRect(px-34,py-26,26,7);ctx.fillRect(px-34,py+19,26,7);
+  ctx.fillStyle='#4ade80';ctx.beginPath();ctx.moveTo(px-8,py-6);ctx.lineTo(px,py);ctx.lineTo(px-8,py+6);ctx.closePath();ctx.fill();
+  // 궤적
+  if(sim.trail.length>1){ctx.strokeStyle='rgba(245,167,66,0.5)';ctx.lineWidth=1.5;ctx.beginPath();sim.trail.forEach((p,i)=>i?ctx.lineTo(SX(Math.max(p.x,0)),SY(p.y)):ctx.moveTo(SX(Math.max(p.x,0)),SY(p.y)));ctx.stroke();}
+  // 로봇
+  const rx=SX(Math.max(sim.x,0)),ry=SY(sim.y);ctx.save();ctx.translate(rx,ry);ctx.rotate(-sim.theta);
+  if(sim.thrust>0.01&&!sim.done&&sim.fuel>0){ctx.fillStyle='rgba(56,225,198,0.85)';ctx.beginPath();ctx.moveTo(9,0);ctx.lineTo(15+Math.random()*5,-2.5);ctx.lineTo(15+Math.random()*5,2.5);ctx.closePath();ctx.fill();}
+  ctx.fillStyle=sim.done?(sim.ok?'#4ade80':'#f2555a'):'#e8edf7';ctx.fillRect(-7,-6,14,12);ctx.fillStyle='#5aa0ff';ctx.fillRect(-11,-4,4,8);ctx.fillRect(7,-4,4,8);
+  ctx.fillStyle='#f5a742';ctx.beginPath();ctx.moveTo(-7,-4);ctx.lineTo(-12,0);ctx.lineTo(-7,4);ctx.closePath();ctx.fill();ctx.restore();
+  // HUD
+  ctx.fillStyle='#8b96ad';ctx.font='11px ui-monospace,monospace';ctx.textAlign='left';
+  const cs=Math.abs(sim.vx);
+  const hud=['거리 '+sim.x.toFixed(1)+' m','접근 '+(cs*100).toFixed(1)+' cm/s','측면 '+sim.y.toFixed(2)+' m','자세 '+(sim.theta/DEG).toFixed(1)+'°','연료 '+sim.fuel.toFixed(2)+' kg'];
+  hud.forEach((t,i)=>ctx.fillText(t,padL+2,padT+12+i*13));
+  // 결과 오버레이
+  if(sim.done){ctx.fillStyle=sim.ok?'rgba(74,222,128,0.14)':'rgba(242,85,90,0.14)';ctx.fillRect(0,0,w,h);ctx.textAlign='center';ctx.fillStyle=sim.ok?'#4ade80':'#f2555a';ctx.font='bold '+(big?22:16)+'px system-ui';ctx.fillText(sim.ok?'도킹 성공':'도킹 실패',w/2,h/2-6);ctx.fillStyle='#e8edf7';ctx.font='12px system-ui';ctx.fillText(sim.reason,w/2,h/2+16);}
+}
+function drawDockAll(){drawArena($('c-dock'),userDock,true);drawArena($('c-dock-good'),cmpGood,false);drawArena($('c-dock-bad'),cmpBad,false);updateDockStatus();}
+function statusPill(sim){if(!sim.done)return sim.t>0?'<span style="color:var(--warn)">진행 중</span>':'<span style="color:var(--muted)">대기</span>';return sim.ok?'<span style="color:var(--good)">성공</span>':'<span style="color:var(--crit)">실패</span>';}
+function updateDockStatus(){$('dock-status').innerHTML=statusPill(userDock);$('good-status').innerHTML=statusPill(cmpGood);$('bad-status').innerHTML=statusPill(cmpBad);
+  const s=userDock;$('dock-read').innerHTML=rd([['거리',s.x.toFixed(1)+' m'],['접근속도',(Math.abs(s.vx)*100).toFixed(1)+' cm/s'],['측면오차',s.y.toFixed(2)+' m'],['자세오차',(s.theta/DEG).toFixed(1)+'°'],['잔여연료',s.fuel.toFixed(2)+' kg'],['결과',s.done?(s.ok?'성공':'실패'):'—']]);
+}
+
+/* ═══ 애니메이션 루프 ═══ */
+function loop(){
+  if(activeTab==='orbit'){az+=0.006;drawOrbit3D();}
+  else if(activeTab==='dock'){if(dockRunning){for(let k=0;k<4;k++){[userDock,cmpGood,cmpBad].forEach(s=>{if(!s.done)s.step(0.08);});}if(userDock.done&&cmpGood.done&&cmpBad.done)dockRunning=false;}drawDockAll();}
+  requestAnimationFrame(loop);
+}
+
+/* ═══ 탭 ═══ */
+document.querySelectorAll('.tabs button').forEach(b=>{b.addEventListener('click',()=>{document.querySelectorAll('.tabs button').forEach(x=>x.setAttribute('aria-selected','false'));b.setAttribute('aria-selected','true');activeTab=b.dataset.tab;['orbit','battery','path','dock','refuel','life'].forEach(t=>$('tab-'+t).hidden=activeTab!==t);drawActive();});});
+
+/* ═══ 입력 이벤트 ═══ */
+const DOCK_KEYS=['dockRange','dockOffset','dockSpeed','sensorNoise','autoGain','dockFuel'];
+IDS.forEach(id=>{inputs[id].addEventListener('input',()=>{
+  if(id==='preset'){const p=PRESETS[inputs.preset.value];if(p){inputs.alt.value=p.alt;inputs.ecc.value=p.ecc;inputs.inc.value=p.inc;}}
+  else if(['alt','ecc','inc'].includes(id)){inputs.preset.value='custom';}
+  recompute();
+  if(DOCK_KEYS.includes(id)) resetDocks();
+});});
+$('chip-good').addEventListener('click',()=>{Object.entries(GOOD_CFG).forEach(([k,v])=>{const m={x0:'dockRange',y0:'dockOffset',v0:'dockSpeed',noise:'sensorNoise',gain:'autoGain',fuel0:'dockFuel'};inputs[m[k]].value=v;});recompute();resetDocks();});
+$('chip-bad').addEventListener('click',()=>{Object.entries(BAD_CFG).forEach(([k,v])=>{const m={x0:'dockRange',y0:'dockOffset',v0:'dockSpeed',noise:'sensorNoise',gain:'autoGain',fuel0:'dockFuel'};inputs[m[k]].value=v;});recompute();resetDocks();});
+$('dock-play').addEventListener('click',()=>{if(userDock.done&&cmpGood.done&&cmpBad.done)resetDocks();dockRunning=true;});
+$('dock-reset').addEventListener('click',resetDocks);
+window.addEventListener('resize',drawActive);
+
+recompute();
+requestAnimationFrame(loop);
+</script>
