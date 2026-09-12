@@ -311,6 +311,7 @@
           </select>
           <button class="btn primary" id="man-start">▶ 시작 (Enter)</button>
           <button class="btn" id="man-reset">↺ 리셋</button>
+          <button class="btn" id="man-viewbtn">🔄 시점 전환 (F5 · V)</button>
           <span id="man-view" style="font-size:12.5px; color:var(--cyan)">시점: 전체 뷰(3인칭) · F5 전환</span>
           <span id="man-best" style="margin-left:auto; font-size:12.5px; color:var(--muted)">최고 점수 —</span>
         </div>
@@ -322,7 +323,7 @@
           <div><kbd>↑</kbd><kbd>↓</kbd> 상승 / 하강</div><div><kbd>←</kbd><kbd>→</kbd> 좌 / 우 이동</div>
           <div><kbd>A</kbd> 가속 (표적 쪽으로 추진)</div><div><kbd>S</kbd> 감속 (역추진)</div>
           <div style="grid-column:1/-1;color:var(--good)"><kbd>D</kbd> <b>도킹 (캡처 명령)</b> — 화면에 "도킹 가능" 표시가 뜰 때 누르세요. 명령 없이 부딪히면 래치가 작동하지 않아 실패합니다.</div>
-          <div><kbd>Space</kbd> 자동 제동 (모든 상대속도 0, 연료 소모)</div><div><kbd>F5</kbd> 시점 전환 (전체 뷰 → 근접 캠 → 전술 맵)</div>
+          <div><kbd>Space</kbd> 자동 제동 (모든 상대속도 0, 연료 소모)</div><div><kbd>F5</kbd> 또는 <kbd>V</kbd> 시점 전환 (전체 뷰 → 근접 캠 → 전술 맵)</div>
           <div><kbd>Enter</kbd> 시작 / 재시작</div>
         </div>
         <p class="sub" style="margin-top:10px">점수 = 1000 − 시간×1.2 − 연료사용(kg)×60 − 접촉속도(cm/s)×15 · 성공 조건: 상대속도 &lt; 판정선, 측면오차 &lt; 0.5 m, 자세 &lt; 8°. 자세와 측면 속도는 자동 안정화(레이트 댐핑)되며, <b>접근속도 조절은 전적으로 조종사 몫</b>입니다 — 마지막 5 m는 브레이크로 10 cm/s 아래로 낮추세요.</p>
@@ -1954,7 +1955,7 @@ function manCfg(){const d=MAN_DIFF[$('manDiff').value]||MAN_DIFF.normal;return{.
 function manBestKey(){return 'manBest_'+$('manDiff').value;}
 function manShowBest(){let b=0;try{b=+localStorage.getItem(manBestKey())||0;}catch(e){}$('man-best').textContent='최고 점수 '+(b?b+'점':'—');}
 function manReset(){manDock=makeDock(manCfg());manRunning=false;manScore=null;manKeys={};manShowBest();manDraw();}
-function manStart(){if(!manDock||manDock.done)manReset();manRunning=true;$('c-man').focus();manDraw();}
+function manStart(){if(!manDock||manDock.done)manReset();manRunning=true;if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();manDraw();}
 function manFinish(){
   const s=manDock;
   if(s.ok){const used=s.cfg.fuel0-s.fuel;manScore=Math.max(0,Math.round(1000-s.t*1.2-used*60-(s.metrics.vrel*100)*15));
@@ -1975,7 +1976,7 @@ function manualTick(){
     for(let k=0;k<2;k++)manDock.step(0.04);
     if(manDock.done){manRunning=false;manFinish();}
   }
-  if($('c-man').clientWidth)manDraw();
+  if(document.body.classList.contains('game-mode'))manDraw();              // 어떤 시점이든 매 프레임 갱신 (버그: 전체 뷰만 그리던 문제 수정)
 }
 function manDraw(){
   if(!manDock)return;
@@ -2004,9 +2005,9 @@ function manStatusUpdate(){
 }
 window.addEventListener('keydown',e=>{
   if(!document.body.classList.contains('game-mode'))return;
-  if(e.target&&/^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName))return;
+  if(!manRunning&&e.target&&/^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName))return;   // 조종 중엔 입력창 포커스와 무관하게 키 처리
   if(e.code==='Enter'){manStart();e.preventDefault();return;}
-  if(e.code==='F5'||e.key==='F5'){manCycleView();e.preventDefault();return;}   // F5: 시점 전환 (새로고침 방지)
+  if(e.code==='F5'||e.key==='F5'||e.code==='KeyV'){manCycleView();e.preventDefault();return;}   // F5 / V: 시점 전환 (새로고침 방지)
   if(e.code==='KeyD'){manDockCmd();e.preventDefault();return;}
   const k=KEYMAP[e.code];if(k&&manRunning){manKeys[k]=true;e.preventDefault();}
 });
@@ -2020,6 +2021,7 @@ document.querySelectorAll('.modebar button').forEach(b=>b.addEventListener('clic
 window.addEventListener('keyup',e=>{const k=KEYMAP[e.code];if(k)manKeys[k]=false;});
 $('man-start').addEventListener('click',manStart);
 $('man-reset').addEventListener('click',manReset);
+$('man-viewbtn').addEventListener('click',()=>{manCycleView();if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();});
 $('manDiff').addEventListener('input',manReset);
 
 /* ═══ 애니메이션 루프 ═══ */
