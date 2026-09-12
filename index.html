@@ -104,6 +104,9 @@
   .game-mode #tab-manual > :not(h2){display:revert}
   .game-mode #tab-manual > h2::before{content:''}
   .game-mode #tab-manual > h2{cursor:default}
+  /* 게임: 분할 없이 한 번에 한 시점만 (F5 순환) */
+  #tab-manual #man-arena-box,#tab-manual #man-fpv-box,#tab-manual #man-tac-box{display:none; margin-top:0}
+  #tab-manual.view-arena #man-arena-box,#tab-manual.view-chase #man-fpv-box,#tab-manual.view-tactical #man-tac-box{display:block}
   .keys{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:6px 14px; font-size:12.5px; color:var(--muted); margin-top:12px}
   kbd{display:inline-block; font-family:var(--mono); font-size:11px; color:var(--ink); background:var(--bg2); border:1px solid var(--line); border-bottom-width:2px; border-radius:5px; padding:1px 7px; margin-right:4px}
   .jump{display:flex; gap:6px; flex-wrap:wrap; align-items:center; font-size:12px; color:var(--muted); background:var(--panel2); border:1px solid var(--line); border-radius:12px; padding:8px 10px}
@@ -308,17 +311,19 @@
           </select>
           <button class="btn primary" id="man-start">▶ 시작 (Enter)</button>
           <button class="btn" id="man-reset">↺ 리셋</button>
+          <span id="man-view" style="font-size:12.5px; color:var(--cyan)">시점: 전체 뷰(3인칭) · F5 전환</span>
           <span id="man-best" style="margin-left:auto; font-size:12.5px; color:var(--muted)">최고 점수 —</span>
         </div>
-        <div class="cbox"><div class="cap"><span>전체 뷰 — 🖱 드래그 회전 · 휠 줌 · 키보드 조종</span><span id="man-status">대기</span></div><canvas id="c-man" tabindex="0" style="outline:none"></canvas></div>
-        <div class="cbox" style="margin-top:14px"><div class="cap"><span>근접 3인칭 캠 — HUD는 <b>센서 측정값</b>(잡음·편향 포함)</span><span style="color:var(--cyan)">LIVE</span></div><canvas id="c-man-fpv"></canvas></div>
+        <div class="cbox" id="man-arena-box"><div class="cap"><span>전체 뷰 (3인칭) — 🖱 드래그 회전 · 휠 줌 · 키보드 조종</span><span id="man-status">대기</span></div><canvas id="c-man" tabindex="0" style="outline:none"></canvas></div>
+        <div class="cbox" id="man-fpv-box"><div class="cap"><span>근접 캠 — HUD는 <b>센서 측정값</b>(잡음·편향 포함)</span><span style="color:var(--cyan)">LIVE</span></div><canvas id="c-man-fpv"></canvas></div>
+        <div class="cbox" id="man-tac-box"><div class="cap"><span>전술 맵 — 평면도(좌우) · 측면도(상하) · 회랑 · 캡처 거리 2 m</span><span style="color:var(--cyan)">F5</span></div><canvas id="c-man-tac"></canvas></div>
         <div class="readout" id="man-read"></div>
         <div class="keys">
-          <div><kbd>W</kbd><kbd>↑</kbd> 전진(접근)</div><div><kbd>↓</kbd> 후진(제동)</div>
-          <div style="grid-column:1/-1;color:var(--good)"><kbd>S</kbd> <b>도킹 시작(캡처 명령)</b> — 화면에 "도킹 가능" 표시가 뜰 때 누르세요. 명령 없이 부딪히면 래치가 작동하지 않아 실패합니다.</div>
-          <div><kbd>A</kbd><kbd>←</kbd> 좌 이동</div><div><kbd>D</kbd><kbd>→</kbd> 우 이동</div>
-          <div><kbd>R</kbd> 상승</div><div><kbd>F</kbd> 하강</div>
-          <div><kbd>Space</kbd> 브레이크(상대속도 0으로, 연료 소모)</div><div><kbd>Enter</kbd> 시작 / 재시작</div>
+          <div><kbd>↑</kbd><kbd>↓</kbd> 상승 / 하강</div><div><kbd>←</kbd><kbd>→</kbd> 좌 / 우 이동</div>
+          <div><kbd>A</kbd> 가속 (표적 쪽으로 추진)</div><div><kbd>S</kbd> 감속 (역추진)</div>
+          <div style="grid-column:1/-1;color:var(--good)"><kbd>D</kbd> <b>도킹 (캡처 명령)</b> — 화면에 "도킹 가능" 표시가 뜰 때 누르세요. 명령 없이 부딪히면 래치가 작동하지 않아 실패합니다.</div>
+          <div><kbd>Space</kbd> 자동 제동 (모든 상대속도 0, 연료 소모)</div><div><kbd>F5</kbd> 시점 전환 (전체 뷰 → 근접 캠 → 전술 맵)</div>
+          <div><kbd>Enter</kbd> 시작 / 재시작</div>
         </div>
         <p class="sub" style="margin-top:10px">점수 = 1000 − 시간×1.2 − 연료사용(kg)×60 − 접촉속도(cm/s)×15 · 성공 조건: 상대속도 &lt; 판정선, 측면오차 &lt; 0.5 m, 자세 &lt; 8°. 자세와 측면 속도는 자동 안정화(레이트 댐핑)되며, <b>접근속도 조절은 전적으로 조종사 몫</b>입니다 — 마지막 5 m는 브레이크로 10 cm/s 아래로 낮추세요.</p>
       </div>
@@ -622,9 +627,9 @@ function makeDock(cfg){
     this.metrics={vrel,lat,att,fuel:this.fuel};
     const crash=r=>{this.crashed=true;this.finish(false,r);};                  // 접촉 상태의 실패 = 충돌·폭발
     const vth=this.cfg.vthr||V_CONTACT;
-    if(this.cfg.manual&&!this.captureCmd){                                   // 수동 모드: 캡처 명령(S) 없이 접촉하면 래치 미작동
-      if(vrel>vth)crash('캡처 명령(S) 없이 접촉 · '+(vrel*100).toFixed(1)+' cm/s 충돌');
-      else this.finish(false,'캡처 명령(S) 없이 접촉 · 래치 미작동 — 도킹 실패');
+    if(this.cfg.manual&&!this.captureCmd){                                   // 수동 모드: 캡처 명령(D) 없이 접촉하면 래치 미작동
+      if(vrel>vth)crash('캡처 명령(D) 없이 접촉 · '+(vrel*100).toFixed(1)+' cm/s 충돌');
+      else this.finish(false,'캡처 명령(D) 없이 접촉 · 래치 미작동 — 도킹 실패');
       return;}
     if(this.fuel<=0.001)crash('연료 소진 · 제어 상실 상태로 충돌');
     else if(vrel>vth)crash('상대속도 초과 ('+(vrel*100).toFixed(1)+' cm/s > '+(vth*100).toFixed(0)+') · 충돌');
@@ -1894,7 +1899,48 @@ const MAN_DIFF={
   extreme:{x0:100,y0:10,v0:0.5,noise:3.0,gain:1,fuel0:4,bias:0.4, thr:0.5, vthr:0.03},
 };
 let manDock=null,manRunning=false,manKeys={},manScore=null;
-const KEYMAP={ArrowUp:'fwd',KeyW:'fwd',ArrowDown:'back',ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',KeyR:'up',KeyF:'down',Space:'brake'};
+const KEYMAP={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',KeyA:'fwd',KeyS:'back',Space:'brake'};   // 방향키=상하좌우 · A 가속 · S 감속 · D 도킹(별도 처리)
+let manView=0;const MAN_VIEWS=['arena','chase','tactical'];
+function manSetView(i){manView=((i%3)+3)%3;const p=$('tab-manual'),v=MAN_VIEWS[manView];p.classList.remove('view-arena','view-chase','view-tactical');p.classList.add('view-'+v);
+  $('man-view').textContent='시점: '+({arena:'전체 뷰(3인칭)',chase:'근접 캠',tactical:'전술 맵'})[v]+' · F5 전환';requestAnimationFrame(manDraw);}
+function manCycleView(){manSetView(manView+1);}
+/* 전술 맵: 평면도(x–y) + 측면도(x–z), 회랑·캡처 거리·6초 예측 벡터 */
+function drawTactical(cv,s){
+  const {ctx,w,h}=fitCanvas(cv,0.62);ctx.clearRect(0,0,w,h);ctx.fillStyle='#08101d';ctx.fillRect(0,0,w,h);
+  const c=s.cfg,xView=Math.max(c.x0*1.05,s.x+4),yView=Math.max(Math.abs(c.y0)*2.2,PORT_R+SLOPE*xView+1,4);
+  const panes=[{y0:8,hh:(h-26)/2,lat:'y',lab:'평면도 (위에서 봄) — 좌·우'},{y0:18+(h-26)/2,hh:(h-26)/2,lat:'z',lab:'측면도 (옆에서 봄) — 상·하'}];
+  panes.forEach(p=>{
+    const padL=60,padR=16,xs=(w-padL-padR)/xView,ys=(p.hh/2-10)/yView,cy=p.y0+p.hh/2;
+    const SX=x=>padL+x*xs,SY=v=>cy-v*ys;
+    ctx.fillStyle='rgba(5,9,18,0.6)';ctx.fillRect(0,p.y0,w,p.hh);
+    ctx.fillStyle='rgba(74,222,128,0.08)';ctx.beginPath();ctx.moveTo(SX(0),SY(PORT_R));ctx.lineTo(SX(xView),SY(PORT_R+SLOPE*xView));ctx.lineTo(SX(xView),SY(-(PORT_R+SLOPE*xView)));ctx.lineTo(SX(0),SY(-PORT_R));ctx.closePath();ctx.fill();
+    ctx.strokeStyle='rgba(74,222,128,0.35)';ctx.lineWidth=1;ctx.stroke();
+    ctx.setLineDash([4,4]);ctx.strokeStyle='rgba(120,150,200,0.4)';ctx.beginPath();ctx.moveTo(SX(0),SY(0));ctx.lineTo(SX(xView),SY(0));ctx.stroke();ctx.setLineDash([]);
+    ctx.font='10px ui-monospace,monospace';ctx.textAlign='center';
+    for(let x=0;x<=xView;x+=xView>40?10:5){ctx.strokeStyle='rgba(90,110,150,0.15)';ctx.beginPath();ctx.moveTo(SX(x),p.y0);ctx.lineTo(SX(x),p.y0+p.hh-14);ctx.stroke();ctx.fillStyle='#5a6580';ctx.fillText(x+' m',SX(x),p.y0+p.hh-4);}
+    ctx.strokeStyle='rgba(245,167,66,0.7)';ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(SX(CAPTURE_RANGE),p.y0+4);ctx.lineTo(SX(CAPTURE_RANGE),p.y0+p.hh-14);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle='#f5a742';ctx.fillText('캡처 2 m',SX(CAPTURE_RANGE)+22,p.y0+22);
+    ctx.fillStyle='#c99a2d';ctx.fillRect(SX(0)-34,SY(1.4),28,SY(-1.4)-SY(1.4));                         // 표적 몸체
+    ctx.fillStyle='#4ade80';ctx.fillRect(SX(0)-6,SY(PORT_R),6,SY(-PORT_R)-SY(PORT_R));                   // 포트
+    const lat=v=>p.lat==='y'?v.y:v.z;
+    if(s.trail.length>1){ctx.strokeStyle='rgba(245,167,66,0.5)';ctx.lineWidth=1.3;ctx.beginPath();s.trail.forEach((q,i)=>i?ctx.lineTo(SX(Math.max(q.x,0)),SY(lat(q))):ctx.moveTo(SX(Math.max(q.x,0)),SY(lat(q))));ctx.stroke();}
+    const rx=SX(Math.max(s.x,0)),ry=SY(lat(s)),vl=p.lat==='y'?s.vy:s.vz;
+    ctx.strokeStyle='#f2555a';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(rx,ry);ctx.lineTo(rx+s.vx*6*xs,ry-vl*6*ys);ctx.stroke();  // 6초 예측
+    ctx.fillStyle=s.done?(s.ok?'#4ade80':'#f2555a'):'#e8edf7';ctx.fillRect(rx-6,ry-5,12,10);ctx.fillStyle='#38e1c6';ctx.fillRect(rx+6,ry-3,3,6);
+    ctx.fillStyle='#8b96ad';ctx.textAlign='left';ctx.font='11px ui-monospace,monospace';ctx.fillText(p.lab,padL,p.y0+12);
+    ctx.fillStyle='#e8edf7';ctx.textAlign='right';ctx.fillText((p.lat==='y'?'측면 y ':'상하 z ')+lat(s).toFixed(2)+' m',w-padR,p.y0+12);
+  });
+  ctx.fillStyle='#8b96ad';ctx.font='11px ui-monospace,monospace';ctx.textAlign='left';ctx.fillText('빨간 선 = 6초 후 예상 위치 · 초록 부채꼴 = 접근 회랑',8,h-6);
+}
+function manOverlay(cv,s){                                                 // 도킹 가능/불가 안내 + 결과 (보이는 화면마다 표시)
+  const ctx=cv.getContext('2d'),w=cv.clientWidth,h=cv.clientHeight;ctx.textAlign='center';
+  if(manRunning&&!s.done){const c=manCanDock();
+    if(c.ok){const pl=0.75+0.25*Math.sin(performance.now()/160);ctx.fillStyle='rgba(74,222,128,'+(0.16*pl)+')';ctx.fillRect(w/2-190,h*0.20-26,380,52);ctx.strokeStyle='rgba(74,222,128,'+pl+')';ctx.lineWidth=2;ctx.strokeRect(w/2-190,h*0.20-26,380,52);
+      ctx.fillStyle='#4ade80';ctx.font='bold 20px system-ui';ctx.fillText('도킹 가능 — [ D ] 키로 캡처',w/2,h*0.20+2);ctx.font='11px ui-monospace,monospace';ctx.fillStyle='#e8edf7';ctx.fillText('거리 '+s.x.toFixed(2)+' m · 상대속도 '+(Math.hypot(s.vx,s.vy,s.vz)*100).toFixed(1)+' cm/s · 측면 '+Math.hypot(s.y,s.z).toFixed(2)+' m',w/2,h*0.20+20);}
+    else if(s.x<=CAPTURE_RANGE+3&&s.x>0){ctx.fillStyle='rgba(245,167,66,0.9)';ctx.font='bold 13px ui-monospace,monospace';ctx.fillText(s.x>CAPTURE_RANGE?'캡처 거리 2 m까지 '+(s.x-CAPTURE_RANGE).toFixed(1)+' m 남음':'도킹 불가 — '+c.why,w/2,h*0.20);}
+    if(manMsg&&performance.now()-manMsgT<1600){ctx.fillStyle='rgba(242,85,90,0.95)';ctx.font='bold 13px ui-monospace,monospace';ctx.fillText(manMsg,w/2,h*0.20+34);}}
+  if(s.done){ctx.fillStyle=s.ok?'#4ade80':'#f2555a';ctx.font='bold 26px system-ui';ctx.fillText(s.ok?('도킹 성공!  '+manScore+'점 '+(manScore>=800?'★★★':manScore>=600?'★★':'★')):'실패 — Enter 로 재도전',w/2,h*0.28);}
+}
 const CAPTURE_RANGE=2.0;                                                   // 도킹(캡처) 명령 가능 거리 (m)
 let manMsg='',manMsgT=0;
 function manCanDock(){const s=manDock;if(!s||s.done||s.x>CAPTURE_RANGE||s.x<=0)return{ok:false,why:''};
@@ -1933,9 +1979,12 @@ function manualTick(){
 }
 function manDraw(){
   if(!manDock)return;
-  const cv=$('c-man');if(!cv.clientWidth)return;
-  drawArena(cv,manDock,true);
-  const ctx=cv.getContext('2d'),w=cv.clientWidth-0,h=cv.clientHeight,s=manDock,m=s.meas||{x:s.x,vx:s.vx,y:s.y,z:s.z};
+  const s=manDock,cv=$('c-man'),cvF=$('c-man-fpv'),cvT=$('c-man-tac');
+  if(cvF.clientWidth){drawFPV(cvF,s);manOverlay(cvF,s);}
+  if(cvT.clientWidth){drawTactical(cvT,s);manOverlay(cvT,s);}
+  if(!cv.clientWidth){manStatusUpdate();return;}
+  drawArena(cv,s,true);
+  const ctx=cv.getContext('2d'),w=cv.clientWidth-0,h=cv.clientHeight,m=s.meas||{x:s.x,vx:s.vx,y:s.y,z:s.z};
   // 게임 HUD (상단 중앙)
   ctx.fillStyle='rgba(5,9,18,0.82)';ctx.fillRect(w/2-170,8,340,44);ctx.strokeStyle='#1c6b5f';ctx.lineWidth=1.2;ctx.strokeRect(w/2-170,8,340,44);
   ctx.textAlign='center';ctx.fillStyle='#38e1c6';ctx.font='bold 13px ui-monospace,monospace';
@@ -1944,15 +1993,12 @@ function manDraw(){
   ctx.fillText('측정 거리 '+Math.max(m.x,0).toFixed(1)+' m · 측정 접근 '+(-m.vx*100).toFixed(0)+' cm/s · 판정 <'+((s.cfg.vthr||0.1)*100).toFixed(0)+' cm/s',w/2,44);
   // 활성 키 표시
   const on=Object.keys(manKeys).filter(k=>manKeys[k]);
-  if(on.length){ctx.fillStyle='rgba(56,225,198,0.85)';ctx.font='10px ui-monospace,monospace';ctx.fillText('추력: '+on.map(k=>({fwd:'▲전진',back:'▼후진',left:'◀좌',right:'▶우',up:'⬆상승',down:'⬇하강',brake:'■브레이크'})[k]).join(' '),w/2,66);}
-  // 도킹 가능/불가 안내
-  if(manRunning&&!s.done){const c=manCanDock();
-    if(c.ok){const pl=0.75+0.25*Math.sin(performance.now()/160);ctx.fillStyle='rgba(74,222,128,'+(0.16*pl)+')';ctx.fillRect(w/2-190,h*0.20-26,380,52);ctx.strokeStyle='rgba(74,222,128,'+pl+')';ctx.lineWidth=2;ctx.strokeRect(w/2-190,h*0.20-26,380,52);
-      ctx.fillStyle='#4ade80';ctx.font='bold 20px system-ui';ctx.fillText('도킹 가능 — [ S ] 키로 캡처',w/2,h*0.20+2);ctx.font='11px ui-monospace,monospace';ctx.fillStyle='#e8edf7';ctx.fillText('거리 '+s.x.toFixed(2)+' m · 상대속도 '+(Math.hypot(s.vx,s.vy,s.vz)*100).toFixed(1)+' cm/s · 측면 '+Math.hypot(s.y,s.z).toFixed(2)+' m',w/2,h*0.20+20);}
-    else if(s.x<=CAPTURE_RANGE+3&&s.x>0){ctx.fillStyle='rgba(245,167,66,0.9)';ctx.font='bold 13px ui-monospace,monospace';ctx.fillText(s.x>CAPTURE_RANGE?'캡처 거리 2 m까지 '+(s.x-CAPTURE_RANGE).toFixed(1)+' m 남음':'도킹 불가 — '+c.why,w/2,h*0.20);}
-    if(manMsg&&performance.now()-manMsgT<1600){ctx.fillStyle='rgba(242,85,90,0.95)';ctx.font='bold 13px ui-monospace,monospace';ctx.fillText(manMsg,w/2,h*0.20+34);}}
-  if(s.done){ctx.fillStyle=s.ok?'#4ade80':'#f2555a';ctx.font='bold 26px system-ui';ctx.fillText(s.ok?('도킹 성공!  '+manScore+'점 '+(manScore>=800?'★★★':manScore>=600?'★★':'★')):'실패 — Enter 로 재도전',w/2,h*0.28);}
-  drawFPV($('c-man-fpv'),manDock);
+  if(on.length){ctx.fillStyle='rgba(56,225,198,0.85)';ctx.font='10px ui-monospace,monospace';ctx.fillText('추력: '+on.map(k=>({fwd:'A 가속',back:'S 감속',left:'◀ 좌',right:'▶ 우',up:'▲ 상승',down:'▼ 하강',brake:'■ 자동제동'})[k]).join('  '),w/2,66);}
+  manOverlay(cv,s);
+  manStatusUpdate();
+}
+function manStatusUpdate(){
+  const s=manDock,m=s.meas||{x:s.x,vx:s.vx,y:s.y,z:s.z};
   $('man-status').innerHTML=manRunning?'<span style="color:var(--warn)">조종 중</span>':(s.done?(s.ok?'<span style="color:var(--good)">성공 '+manScore+'점</span>':'<span style="color:var(--crit)">실패</span>'):'대기');
   $('man-read').innerHTML=rd([['측정 거리',Math.max(m.x,0).toFixed(1)+' m'],['측정 접근속도',(-m.vx*100).toFixed(1)+' cm/s'],['측정 측면',Math.hypot(m.y||0,m.z||0).toFixed(2)+' m'],['실제 상대속도',(Math.hypot(s.vx,s.vy,s.vz)*100).toFixed(1)+' cm/s'],['연료',s.fuel.toFixed(2)+' kg'],['시간',s.t.toFixed(0)+' s'],['점수',manScore==null?'—':manScore+'점']]);
 }
@@ -1960,13 +2006,14 @@ window.addEventListener('keydown',e=>{
   if(!document.body.classList.contains('game-mode'))return;
   if(e.target&&/^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName))return;
   if(e.code==='Enter'){manStart();e.preventDefault();return;}
-  if(e.code==='KeyS'){manDockCmd();e.preventDefault();return;}
+  if(e.code==='F5'||e.key==='F5'){manCycleView();e.preventDefault();return;}   // F5: 시점 전환 (새로고침 방지)
+  if(e.code==='KeyD'){manDockCmd();e.preventDefault();return;}
   const k=KEYMAP[e.code];if(k&&manRunning){manKeys[k]=true;e.preventDefault();}
 });
 function setMode(m){
   document.body.classList.toggle('game-mode',m==='game');
   document.querySelectorAll('.modebar button').forEach(b=>b.setAttribute('aria-selected',b.dataset.mode===m));
-  if(m==='game'){$('tab-manual').classList.remove('collapsed');manReset();requestAnimationFrame(()=>{manDraw();window.scrollTo({top:0,behavior:'smooth'});});}
+  if(m==='game'){$('tab-manual').classList.remove('collapsed');manSetView(manView);manReset();requestAnimationFrame(()=>{manDraw();window.scrollTo({top:0,behavior:'smooth'});});}
   else{manRunning=false;requestAnimationFrame(drawActive);}
 }
 document.querySelectorAll('.modebar button').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.mode)));
